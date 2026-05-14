@@ -28,6 +28,16 @@ class CartService
         session([self::SESSION_KEY => $cart]);
     }
 
+    public function has_photo(int $event_photo_id): bool
+    {
+        return array_key_exists($event_photo_id, session(self::SESSION_KEY, []));
+    }
+
+    public function count(): int
+    {
+        return $this->get_items()->count();
+    }
+
     public function get_items(): Collection
     {
         $cart = collect(session(self::SESSION_KEY, []));

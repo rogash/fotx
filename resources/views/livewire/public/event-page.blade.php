@@ -4,7 +4,7 @@
         <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <nav class="flex items-center justify-between text-white">
                 <a href="{{ route('public.events.show', $event->slug) }}" class="text-xl font-extrabold tracking-tight">Fotx</a>
-                <a href="{{ route('cart.show') }}" class="rounded-2xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/20 hover:bg-white/15">Carrinho</a>
+                <livewire:public.cart-badge />
             </nav>
 
             <div class="grid min-h-[76vh] items-center gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr]">

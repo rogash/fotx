@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Photographer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Order;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,15 @@ class EventController extends Controller
         $this->authorize('view', $event);
 
         $event->loadCount(['photos', 'ready_photos', 'orders']);
+        $paid_orders = $event->orders()->where('status', 'paid');
+        $recent_orders = $event->orders()->withCount('items')->latest()->limit(5)->get();
 
-        return view('photographer.events.show', compact('event'));
+        return view('photographer.events.show', [
+            'event' => $event,
+            'paid_orders_count' => (clone $paid_orders)->count(),
+            'event_revenue' => (clone $paid_orders)->sum('total_amount'),
+            'recent_orders' => $recent_orders,
+        ]);
     }
 
     public function create(): View
@@ -53,6 +61,24 @@ class EventController extends Controller
         $event->load(['photos' => fn ($query) => $query->latest()]);
 
         return view('photographer.events.photos', compact('event'));
+    }
+
+    public function orders(Event $event): View
+    {
+        $this->authorize('view', $event);
+
+        $orders = Order::query()
+            ->with(['items.event_photo'])
+            ->where('event_id', $event->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('photographer.events.orders', [
+            'event' => $event,
+            'orders' => $orders,
+            'paid_orders_count' => $event->orders()->where('status', 'paid')->count(),
+            'event_revenue' => $event->orders()->where('status', 'paid')->sum('total_amount'),
+        ]);
     }
 
     public function publish(Event $event): RedirectResponse

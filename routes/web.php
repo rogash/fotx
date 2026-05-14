@@ -20,6 +20,7 @@ Route::get('dashboard', DashboardController::class)
 Route::middleware(['auth', 'verified', 'role:admin,photographer'])->group(function (): void {
     Route::resource('events', EventController::class)->except(['store', 'update', 'destroy']);
     Route::get('events/{event}/photos', [EventController::class, 'photos'])->name('events.photos');
+    Route::get('events/{event}/orders', [EventController::class, 'orders'])->name('events.orders');
     Route::post('events/{event}/publish', [EventController::class, 'publish'])->name('events.publish');
 });
 

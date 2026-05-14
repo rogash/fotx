@@ -25,6 +25,8 @@ class SelfieSearch extends Component
 
     public array $results = [];
 
+    public bool $has_searched = false;
+
     public function search(FaceRecognitionService $face_recognition_service): void
     {
         $this->validate();
@@ -53,6 +55,8 @@ class SelfieSearch extends Component
             ->filter(fn (array $result): bool => $result['photo'] !== null)
             ->values()
             ->all();
+
+        $this->has_searched = true;
     }
 
     public function add_to_cart(int $event_photo_id, CartService $cart_service): void
@@ -63,8 +67,18 @@ class SelfieSearch extends Component
         session()->flash('status', 'Foto adicionada ao carrinho.');
     }
 
-    public function render()
+    public function remove_from_cart(int $event_photo_id, CartService $cart_service): void
     {
-        return view('livewire.public.selfie-search');
+        $cart_service->remove_photo($event_photo_id);
+        $this->dispatch('cart-updated');
+        session()->flash('status', 'Foto removida do carrinho.');
+    }
+
+    public function render(CartService $cart_service)
+    {
+        return view('livewire.public.selfie-search', [
+            'cart_photo_ids' => $cart_service->get_items()->pluck('event_photo_id')->all(),
+            'cart_count' => $cart_service->count(),
+        ]);
     }
 }

@@ -12,6 +12,30 @@
         @if (session('status')) <p class="mt-3 text-sm font-medium text-emerald-700">{{ session('status') }}</p> @endif
     </form>
 
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div class="flex flex-wrap gap-2">
+            @foreach ([
+                '' => 'Todas',
+                'uploaded' => 'Enviadas',
+                'processing' => 'Processando',
+                'ready' => 'Prontas',
+                'failed' => 'Falhas',
+            ] as $status => $label)
+                <button
+                    type="button"
+                    wire:click="$set('status_filter', '{{ $status }}')"
+                    class="rounded-2xl px-4 py-2 text-sm font-semibold {{ $status_filter === $status ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-700' }}"
+                >
+                    {{ $label }}
+                    @if ($status !== '')
+                        <span class="ml-1 text-xs opacity-70">{{ $status_counts[$status] ?? 0 }}</span>
+                    @endif
+                </button>
+            @endforeach
+        </div>
+        <p class="text-sm text-slate-500">{{ $event_photos->count() }} foto(s) exibida(s)</p>
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @forelse ($event_photos as $event_photo)
             <div class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">

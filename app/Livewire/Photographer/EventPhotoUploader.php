@@ -20,6 +20,8 @@ class EventPhotoUploader extends Component
     #[Validate(['photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:20480'])]
     public array $photos = [];
 
+    public string $status_filter = '';
+
     public function upload(): void
     {
         $this->authorize('update', $this->event);
@@ -90,7 +92,16 @@ class EventPhotoUploader extends Component
     public function render()
     {
         return view('livewire.photographer.event-photo-uploader', [
-            'event_photos' => $this->event->photos()->latest()->get(),
+            'event_photos' => $this->event
+                ->photos()
+                ->when($this->status_filter !== '', fn ($query) => $query->where('status', $this->status_filter))
+                ->latest()
+                ->get(),
+            'status_counts' => $this->event->photos()
+                ->selectRaw('status, count(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status')
+                ->all(),
         ]);
     }
 }

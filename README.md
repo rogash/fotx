@@ -44,15 +44,22 @@ Usuários de demo:
 3. `ProcessEventPhotoJob` gera thumbnail e versão com marca d'água.
 4. Cliente acessa `/e/{slug}`.
 5. Cliente envia selfie com aceite LGPD.
-6. `FaceRecognitionService` retorna fotos aleatórias com score mockado.
-7. Cliente adiciona fotos ao carrinho e finaliza em `/checkout`.
-8. Pagamento é simulado como aprovado.
-9. Downloads ficam em links protegidos por token em `/orders/{order}/downloads/{download_token}`.
+6. Cliente vê preview da selfie antes da busca.
+7. `FaceRecognitionService` retorna fotos aleatórias com score mockado.
+8. Cliente adiciona/remove fotos do carrinho e finaliza em `/checkout`.
+9. Pagamento é simulado como aprovado.
+10. Downloads ficam em links protegidos por token em `/orders/{order}/downloads/{download_token}`.
 
 Clientes autenticados também podem acessar suas compras em:
 
 ```text
 /my/photos
+```
+
+Fotógrafos acompanham pedidos e faturamento por evento em:
+
+```text
+/events/{event}/orders
 ```
 
 ## Reconhecimento facial
