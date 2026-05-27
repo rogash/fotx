@@ -5,7 +5,10 @@
                 <h1 class="text-2xl font-semibold text-slate-900">Pedidos de {{ $event->name }}</h1>
                 <p class="mt-1 text-sm text-slate-500">Acompanhe vendas, compradores e fotos adquiridas.</p>
             </div>
-            <a href="{{ route('events.show', $event) }}" class="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700">Voltar ao evento</a>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('events.orders.export', $event) }}" class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Exportar CSV</a>
+                <a href="{{ route('events.show', $event) }}" class="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700">Voltar ao evento</a>
+            </div>
         </div>
     </x-slot>
 
@@ -36,8 +39,10 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @forelse ($orders as $order)
-                                <tr>
-                                    <td class="px-6 py-4 text-sm font-semibold text-slate-900">#{{ $order->id }}</td>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 text-sm font-semibold text-slate-900">
+                                        <a href="{{ route('events.orders.show', [$event, $order]) }}" class="hover:underline">#{{ $order->id }}</a>
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-slate-600">
                                         <p class="font-medium text-slate-900">{{ $order->buyer_name ?: 'Sem nome' }}</p>
                                         <p>{{ $order->buyer_email }}</p>
