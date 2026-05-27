@@ -8,11 +8,13 @@ use App\Livewire\Public\Checkout;
 use App\Livewire\Public\SelfieSearch;
 use App\Models\Event;
 use App\Models\EventPhoto;
+use App\Models\FaceSearch;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -107,9 +109,50 @@ class FotxMvpTest extends TestCase
             'status' => 'done',
             'consent_accepted' => true,
         ]);
+
+        $this->assertNotNull(FaceSearch::query()->where('event_id', $event->id)->value('expires_at'));
     }
 
-    public function test_checkout_creates_paid_order(): void
+    public function test_face_search_rate_limit_blocks_repeated_searches(): void
+    {
+        Storage::fake('local');
+        config(['fotx.face_search_max_attempts' => 1]);
+
+        $event = Event::factory()->create(['status' => 'published']);
+        EventPhoto::factory()->count(3)->create(['event_id' => $event->id, 'status' => 'ready']);
+
+        Livewire::test(SelfieSearch::class, ['event' => $event])
+            ->set('selfie', UploadedFile::fake()->image('selfie-1.jpg', 600, 600)->size(500))
+            ->set('consent_accepted', true)
+            ->call('search')
+            ->set('selfie', UploadedFile::fake()->image('selfie-2.jpg', 600, 600)->size(500))
+            ->call('search')
+            ->assertHasErrors('selfie');
+
+        $this->assertSame(1, FaceSearch::query()->where('event_id', $event->id)->count());
+    }
+
+    public function test_expired_selfie_purge_removes_files_and_rows(): void
+    {
+        Storage::fake('local');
+
+        $event = Event::factory()->create();
+        Storage::disk('local')->put('events/1/selfies/expired.jpg', 'selfie');
+        $face_search = FaceSearch::query()->create([
+            'event_id' => $event->id,
+            'selfie_path' => 'events/1/selfies/expired.jpg',
+            'status' => 'done',
+            'consent_accepted' => true,
+            'expires_at' => now()->subMinute(),
+        ]);
+
+        Artisan::call('fotx:purge-expired-selfies');
+
+        Storage::disk('local')->assertMissing('events/1/selfies/expired.jpg');
+        $this->assertDatabaseMissing('face_searches', ['id' => $face_search->id]);
+    }
+
+    public function test_checkout_creates_pending_order(): void
     {
         $event = Event::factory()->create(['price_per_photo' => 25.00]);
         $event_photo = EventPhoto::factory()->create(['event_id' => $event->id]);
@@ -119,15 +162,39 @@ class FotxMvpTest extends TestCase
         Livewire::test(Checkout::class)
             ->set('buyer_name', 'Cliente Fotx')
             ->set('buyer_email', 'cliente@fotx.test')
-            ->call('simulate_payment');
+            ->call('start_payment');
 
         $this->assertDatabaseHas('orders', [
             'event_id' => $event->id,
             'buyer_email' => 'cliente@fotx.test',
-            'status' => 'paid',
+            'status' => 'pending',
+            'payment_provider' => 'mock',
         ]);
 
-        $this->assertNotNull(Order::query()->where('buyer_email', 'cliente@fotx.test')->value('download_token'));
+        $order = Order::query()->where('buyer_email', 'cliente@fotx.test')->firstOrFail();
+
+        $this->assertNotNull($order->download_token);
+        $this->assertNotNull($order->payment_reference);
+        $this->assertNotNull($order->payment_checkout_url);
+    }
+
+    public function test_mock_payment_approval_marks_order_as_paid(): void
+    {
+        $event = Event::factory()->create();
+        $order = Order::query()->create([
+            'event_id' => $event->id,
+            'buyer_email' => 'cliente@fotx.test',
+            'total_amount' => 20,
+            'status' => 'pending',
+            'payment_provider' => 'mock',
+            'payment_reference' => 'MOCK-PREF-123',
+        ]);
+
+        $this->post(route('payments.mock.approve', [$order, $order->download_token]))
+            ->assertRedirect(route('orders.success', [$order, $order->download_token]));
+
+        $this->assertSame('paid', $order->refresh()->status);
+        $this->assertNotNull($order->paid_at);
     }
 
     public function test_public_results_can_add_and_remove_photo_from_cart(): void
@@ -205,6 +272,57 @@ class FotxMvpTest extends TestCase
             ->assertOk()
             ->assertSee('comprador@fotx.test')
             ->assertSee('R$ 35,00');
+    }
+
+    public function test_photographer_can_view_order_detail(): void
+    {
+        $photographer = User::factory()->create(['role' => 'photographer']);
+        $event = Event::factory()->create(['user_id' => $photographer->id]);
+        $event_photo = EventPhoto::factory()->create(['event_id' => $event->id, 'filename' => 'vendida.jpg']);
+        $order = Order::query()->create([
+            'event_id' => $event->id,
+            'buyer_name' => 'Cliente Detalhe',
+            'buyer_email' => 'detalhe@fotx.test',
+            'total_amount' => 42,
+            'status' => 'paid',
+            'payment_provider' => 'mock',
+            'payment_reference' => 'MOCK-123',
+        ]);
+        $order->items()->create(['event_photo_id' => $event_photo->id, 'price' => 42]);
+
+        $this->actingAs($photographer)
+            ->get(route('events.orders.show', [$event, $order]))
+            ->assertOk()
+            ->assertSee('Cliente Detalhe')
+            ->assertSee('vendida.jpg')
+            ->assertSee('MOCK-123')
+            ->assertSee(route('orders.downloads', [$order, $order->download_token]));
+    }
+
+    public function test_photographer_can_export_event_orders_csv(): void
+    {
+        $photographer = User::factory()->create(['role' => 'photographer']);
+        $event = Event::factory()->create(['user_id' => $photographer->id]);
+        $event_photo = EventPhoto::factory()->create(['event_id' => $event->id]);
+        $order = Order::query()->create([
+            'event_id' => $event->id,
+            'buyer_name' => 'Cliente CSV',
+            'buyer_email' => 'csv@fotx.test',
+            'total_amount' => 58,
+            'status' => 'paid',
+        ]);
+        $order->items()->create(['event_photo_id' => $event_photo->id, 'price' => 58]);
+
+        $response = $this->actingAs($photographer)
+            ->get(route('events.orders.export', $event))
+            ->assertOk()
+            ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+        $content = $response->streamedContent();
+
+        $this->assertStringContainsString('pedido_id', $content);
+        $this->assertStringContainsString('csv@fotx.test', $content);
+        $this->assertStringContainsString('58.00', $content);
     }
 
     public function test_event_show_has_copyable_public_link(): void
