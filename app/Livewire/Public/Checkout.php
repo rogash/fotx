@@ -4,7 +4,7 @@ namespace App\Livewire\Public;
 
 use App\Models\Order;
 use App\Services\CartService;
-use Illuminate\Support\Str;
+use App\Services\Payments\PaymentGatewayManager;
 use Livewire\Component;
 
 class Checkout extends Component
@@ -13,7 +13,7 @@ class Checkout extends Component
 
     public string $buyer_email = '';
 
-    public function simulate_payment(CartService $cart_service): void
+    public function start_payment(CartService $cart_service, PaymentGatewayManager $payment_gateway_manager): void
     {
         $validated = $this->validate([
             'buyer_name' => ['nullable', 'string', 'max:255'],
@@ -30,9 +30,7 @@ class Checkout extends Component
             ...$validated,
             'event_id' => $event_id,
             'total_amount' => $cart_service->total(),
-            'status' => 'paid',
-            'payment_provider' => 'mock',
-            'payment_reference' => 'MOCK-'.Str::upper(Str::random(10)),
+            'status' => 'pending',
         ]);
 
         foreach ($items as $item) {
@@ -42,9 +40,16 @@ class Checkout extends Component
             ]);
         }
 
+        $checkout_data = $payment_gateway_manager->gateway()->create_checkout($order->load(['event', 'items.event_photo']));
+        $order->update([
+            'payment_provider' => $checkout_data->provider,
+            'payment_reference' => $checkout_data->reference,
+            'payment_checkout_url' => $checkout_data->checkout_url,
+        ]);
+
         $cart_service->clear();
 
-        $this->redirectRoute('orders.success', [$order, $order->download_token], navigate: true);
+        $this->redirectRoute('orders.pending', [$order, $order->download_token], navigate: true);
     }
 
     public function render(CartService $cart_service)

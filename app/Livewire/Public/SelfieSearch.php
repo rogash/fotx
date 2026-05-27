@@ -7,6 +7,7 @@ use App\Models\EventPhoto;
 use App\Models\FaceSearch;
 use App\Services\CartService;
 use App\Services\FaceRecognitionService;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -31,6 +32,10 @@ class SelfieSearch extends Component
     {
         $this->validate();
 
+        if ($this->too_many_search_attempts()) {
+            return;
+        }
+
         $path = $this->selfie->store("events/{$this->event->id}/selfies", config('filesystems.default'));
         $face_search = FaceSearch::query()->create([
             'event_id' => $this->event->id,
@@ -39,6 +44,7 @@ class SelfieSearch extends Component
             'consent_accepted' => $this->consent_accepted,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
+            'expires_at' => now()->addHours(config('fotx.face_selfie_ttl_hours', 24)),
         ]);
 
         $results = $face_recognition_service->search_by_selfie($this->event, $path);
@@ -57,6 +63,23 @@ class SelfieSearch extends Component
             ->all();
 
         $this->has_searched = true;
+    }
+
+    private function too_many_search_attempts(): bool
+    {
+        $key = 'face-search:'.$this->event->id.':'.sha1((string) request()->ip().'|'.session()->getId());
+        $max_attempts = config('fotx.face_search_max_attempts', 5);
+
+        if (RateLimiter::tooManyAttempts($key, $max_attempts)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->addError('selfie', "Muitas buscas em sequência. Tente novamente em {$seconds} segundos.");
+
+            return true;
+        }
+
+        RateLimiter::hit($key, config('fotx.face_search_decay_minutes', 10) * 60);
+
+        return false;
     }
 
     public function add_to_cart(int $event_photo_id, CartService $cart_service): void
