@@ -47,8 +47,10 @@ Usuários de demo:
 6. Cliente vê preview da selfie antes da busca.
 7. `FaceRecognitionService` retorna fotos aleatórias com score mockado.
 8. Cliente adiciona/remove fotos do carrinho e finaliza em `/checkout`.
-9. Pagamento é simulado como aprovado.
-10. Downloads ficam em links protegidos por token em `/orders/{order}/downloads/{download_token}`.
+9. O pedido nasce como `pending` e recebe uma URL de checkout.
+10. Em desenvolvimento, a aprovação é simulada pelo gateway `mock`.
+11. Em produção, o gateway preparado é `mercado_pago`.
+12. Downloads ficam em links protegidos por token em `/orders/{order}/downloads/{download_token}`.
 
 Clientes autenticados também podem acessar suas compras em:
 
@@ -60,6 +62,13 @@ Fotógrafos acompanham pedidos e faturamento por evento em:
 
 ```text
 /events/{event}/orders
+```
+
+Também há detalhe individual e exportação CSV:
+
+```text
+/events/{event}/orders/{order}
+/events/{event}/orders/export
 ```
 
 ## Reconhecimento facial
@@ -76,6 +85,55 @@ POST http://127.0.0.1:8001/search-face
 - Admin e fotógrafo acessam gestão de eventos.
 - Downloads exigem pedido pago, foto comprada e token do pedido.
 - Paths originais não são expostos publicamente.
+- Selfies de busca expiram por `FACE_SELFIE_TTL_HOURS`.
+- Buscas por selfie têm limite por evento/IP/sessão via `FACE_SEARCH_MAX_ATTEMPTS`.
+
+## LGPD e limpeza de selfies
+
+As buscas faciais salvam `expires_at` e podem ser limpas com:
+
+```bash
+php artisan fotx:purge-expired-selfies
+```
+
+Para simular sem remover:
+
+```bash
+php artisan fotx:purge-expired-selfies --dry-run
+```
+
+O scheduler roda essa limpeza diariamente às `03:15`. Em produção, mantenha o scheduler do Laravel ativo:
+
+```bash
+php artisan schedule:work
+```
+
+## Pagamentos
+
+O checkout usa uma abstração em `App\Services\Payments`.
+
+Modo local:
+
+```env
+PAYMENT_GATEWAY=mock
+```
+
+Produção com Mercado Pago Checkout Pro:
+
+```env
+PAYMENT_GATEWAY=mercado_pago
+MERCADO_PAGO_ACCESS_TOKEN=
+MERCADO_PAGO_PUBLIC_KEY=
+MERCADO_PAGO_INTEGRATOR_ID=
+```
+
+Fluxo atual:
+
+1. Checkout cria `orders.status = pending`.
+2. Gateway cria `payment_reference` e `payment_checkout_url`.
+3. Mock permite aprovar manualmente.
+4. Mercado Pago usará webhook em `/payments/mercado-pago/webhook`.
+5. Downloads só são liberados quando o pedido vira `paid`.
 
 ## Storage
 
