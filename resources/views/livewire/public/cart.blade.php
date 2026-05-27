@@ -1,7 +1,7 @@
 <main class="min-h-screen bg-slate-50">
     <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="mb-8 flex items-center justify-between">
-            <a href="/" class="text-xl font-extrabold text-slate-950">Fotx</a>
+            <a href="/" class="inline-flex items-center"><x-brand.logo class="h-10 w-auto" /></a>
             <a href="{{ route('checkout.show') }}" class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Finalizar compra</a>
         </div>
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

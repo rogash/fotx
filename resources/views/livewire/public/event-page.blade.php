@@ -3,7 +3,9 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.28),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_48%,_#14532d_100%)]"></div>
         <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <nav class="flex items-center justify-between text-white">
-                <a href="{{ route('public.events.show', $event->slug) }}" class="text-xl font-extrabold tracking-tight">Fotx</a>
+                <a href="{{ route('public.events.show', $event->slug) }}" class="inline-flex items-center">
+                    <x-brand.logo variant="light" class="h-10 w-auto" />
+                </a>
                 <livewire:public.cart-badge />
             </nav>
 
