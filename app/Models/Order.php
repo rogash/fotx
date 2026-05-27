@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['event_id', 'buyer_name', 'buyer_email', 'total_amount', 'status', 'payment_provider', 'payment_reference', 'download_token'])]
+#[Fillable(['event_id', 'buyer_name', 'buyer_email', 'total_amount', 'status', 'payment_provider', 'payment_reference', 'payment_checkout_url', 'download_token', 'paid_at'])]
 class Order extends Model
 {
     protected static function booted(): void
@@ -22,6 +22,7 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
     }
 
@@ -38,5 +39,14 @@ class Order extends Model
     public function has_photo(EventPhoto $event_photo): bool
     {
         return $this->items()->where('event_photo_id', $event_photo->id)->exists();
+    }
+
+    public function mark_as_paid(?string $payment_reference = null): void
+    {
+        $this->update([
+            'status' => 'paid',
+            'payment_reference' => $payment_reference ?? $this->payment_reference,
+            'paid_at' => now(),
+        ]);
     }
 }
