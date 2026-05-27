@@ -11,9 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands()
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => EnsureRole::class,
+        ]);
+
+        $middleware->preventRequestForgery([
+            'payments/mercado-pago/webhook',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

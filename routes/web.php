@@ -6,6 +6,7 @@ use App\Http\Controllers\Photographer\EventController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\MediaController;
 use App\Http\Controllers\Public\OrderController;
+use App\Http\Controllers\Public\PaymentController;
 use App\Livewire\Public\Cart;
 use App\Livewire\Public\Checkout;
 use App\Livewire\Public\EventPage;
@@ -21,6 +22,8 @@ Route::middleware(['auth', 'verified', 'role:admin,photographer'])->group(functi
     Route::resource('events', EventController::class)->except(['store', 'update', 'destroy']);
     Route::get('events/{event}/photos', [EventController::class, 'photos'])->name('events.photos');
     Route::get('events/{event}/orders', [EventController::class, 'orders'])->name('events.orders');
+    Route::get('events/{event}/orders/export', [EventController::class, 'export_orders'])->name('events.orders.export');
+    Route::get('events/{event}/orders/{order}', [EventController::class, 'order'])->name('events.orders.show');
     Route::post('events/{event}/publish', [EventController::class, 'publish'])->name('events.publish');
 });
 
@@ -38,6 +41,9 @@ Route::get('/media/photos/{event_photo}/thumbnail', [MediaController::class, 'th
 Route::get('/media/photos/{event_photo}/watermarked', [MediaController::class, 'watermarked'])->name('media.photos.watermarked');
 Route::get('/cart', Cart::class)->name('cart.show');
 Route::get('/checkout', Checkout::class)->name('checkout.show');
+Route::post('/payments/mock/{order}/{download_token}/approve', [PaymentController::class, 'approve_mock'])->name('payments.mock.approve');
+Route::post('/payments/mercado-pago/webhook', [PaymentController::class, 'mercado_pago_webhook'])->name('payments.mercado-pago.webhook');
+Route::get('/orders/{order}/pending/{download_token}', [OrderController::class, 'pending'])->name('orders.pending');
 Route::get('/orders/{order}/success/{download_token}', [OrderController::class, 'success'])->name('orders.success');
 Route::get('/orders/{order}/downloads/{download_token}', [OrderController::class, 'downloads'])->name('orders.downloads');
 Route::get('/orders/{order}/downloads/{download_token}/{event_photo}', DownloadController::class)->name('orders.download');
