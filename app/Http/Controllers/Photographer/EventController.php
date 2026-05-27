@@ -8,6 +8,7 @@ use App\Models\Order;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EventController extends Controller
 {
@@ -79,6 +80,51 @@ class EventController extends Controller
             'paid_orders_count' => $event->orders()->where('status', 'paid')->count(),
             'event_revenue' => $event->orders()->where('status', 'paid')->sum('total_amount'),
         ]);
+    }
+
+    public function order(Event $event, Order $order): View
+    {
+        $this->authorize('view', $event);
+        abort_unless($order->event_id === $event->id, 404);
+
+        return view('photographer.events.order', [
+            'event' => $event,
+            'order' => $order->load(['items.event_photo']),
+        ]);
+    }
+
+    public function export_orders(Event $event): StreamedResponse
+    {
+        $this->authorize('view', $event);
+
+        $filename = 'fotx-pedidos-'.$event->slug.'-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($event): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['pedido_id', 'comprador_nome', 'comprador_email', 'status', 'fotos', 'total', 'provedor', 'referencia', 'criado_em']);
+
+            Order::query()
+                ->withCount('items')
+                ->where('event_id', $event->id)
+                ->latest()
+                ->chunk(200, function ($orders) use ($handle): void {
+                    foreach ($orders as $order) {
+                        fputcsv($handle, [
+                            $order->id,
+                            $order->buyer_name,
+                            $order->buyer_email,
+                            $order->status,
+                            $order->items_count,
+                            number_format((float) $order->total_amount, 2, '.', ''),
+                            $order->payment_provider,
+                            $order->payment_reference,
+                            $order->created_at?->toDateTimeString(),
+                        ]);
+                    }
+                });
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function publish(Event $event): RedirectResponse

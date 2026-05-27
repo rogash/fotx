@@ -18,6 +18,16 @@ class OrderController extends Controller
         ]);
     }
 
+    public function pending(Order $order, string $download_token): View
+    {
+        abort_unless(hash_equals((string) $order->download_token, $download_token), 403);
+
+        return view('orders.pending', [
+            'order' => $order->load('items.event_photo'),
+            'download_token' => $download_token,
+        ]);
+    }
+
     public function downloads(Order $order, string $download_token): View
     {
         $this->authorize_token($order, $download_token);
