@@ -14,7 +14,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div>
                                 <p class="text-lg font-semibold text-slate-950">{{ $order->event->name }}</p>
-                                <p class="mt-1 text-sm text-slate-500">Pedido #{{ $order->id }} - {{ $order->items->count() }} foto(s)</p>
+                                <p class="mt-1 text-sm text-slate-500">Pedido {{ $order->public_id }} - {{ $order->items->count() }} foto(s)</p>
                             </div>
                             <div class="text-right">
                                 <p class="font-semibold text-slate-900">R$ {{ number_format((float) $order->total_amount, 2, ',', '.') }}</p>
@@ -23,7 +23,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="rounded-2xl bg-white p-8 text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">Voce ainda nao comprou fotos.</div>
+                    <div class="rounded-2xl bg-white p-8 text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">Você ainda não comprou fotos.</div>
                 @endforelse
             </div>
 

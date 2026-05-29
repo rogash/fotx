@@ -13,7 +13,7 @@ class MercadoPagoPaymentGateway implements PaymentGateway
         $access_token = config('fotx.mercado_pago_access_token');
 
         if (blank($access_token)) {
-            throw new RuntimeException('MERCADO_PAGO_ACCESS_TOKEN nao configurado.');
+            throw new RuntimeException('MERCADO_PAGO_ACCESS_TOKEN não configurado.');
         }
 
         $order->loadMissing(['event', 'items.event_photo']);
@@ -25,7 +25,7 @@ class MercadoPagoPaymentGateway implements PaymentGateway
             ]))
             ->post('https://api.mercadopago.com/checkout/preferences', [
                 'items' => $order->items->map(fn ($item): array => [
-                    'id' => (string) $item->event_photo_id,
+                    'id' => (string) $item->event_photo->public_id,
                     'title' => $item->event_photo->filename,
                     'quantity' => 1,
                     'currency_id' => 'BRL',
@@ -35,7 +35,7 @@ class MercadoPagoPaymentGateway implements PaymentGateway
                     'name' => $order->buyer_name,
                     'email' => $order->buyer_email,
                 ],
-                'external_reference' => (string) $order->id,
+                'external_reference' => (string) $order->public_id,
                 'notification_url' => route('payments.mercado-pago.webhook'),
                 'back_urls' => [
                     'success' => route('orders.pending', [$order, $order->download_token]),

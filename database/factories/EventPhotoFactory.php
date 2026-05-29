@@ -19,6 +19,8 @@ class EventPhotoFactory extends Factory
             'watermarked_path' => 'events/1/watermarked/sample.jpg',
             'thumbnail_path' => 'events/1/thumbnails/sample.jpg',
             'filename' => 'sample.jpg',
+            'participant_code' => null,
+            'search_keywords' => null,
             'mime_type' => 'image/jpeg',
             'size_bytes' => 1024,
             'width' => 1200,

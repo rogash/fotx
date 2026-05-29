@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h1 class="text-2xl font-semibold text-slate-900">Pedido #{{ $order->id }}</h1>
+                <h1 class="text-2xl font-semibold text-slate-900">Pedido {{ $order->public_id }}</h1>
                 <p class="mt-1 text-sm text-slate-500">{{ $event->name }} - {{ $order->created_at->format('d/m/Y H:i') }}</p>
             </div>
             <a href="{{ route('events.orders', $event) }}" class="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700">Voltar aos pedidos</a>

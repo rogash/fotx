@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="text-center">
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Pedido #{{ $order->id }}</p>
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Pedido {{ $order->public_id }}</p>
         <h1 class="mt-3 text-2xl font-bold text-slate-950">Pagamento pendente</h1>
         <p class="mt-3 text-sm text-slate-600">Seu pedido foi criado. Assim que o pagamento for aprovado, os downloads serão liberados.</p>
 

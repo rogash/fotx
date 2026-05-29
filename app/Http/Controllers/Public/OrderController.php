@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\URL;
 
 class OrderController extends Controller
 {
@@ -31,10 +32,20 @@ class OrderController extends Controller
     public function downloads(Order $order, string $download_token): View
     {
         $this->authorize_token($order, $download_token);
+        $order->load('items.event_photo');
 
         return view('orders.downloads', [
-            'order' => $order->load('items.event_photo'),
+            'order' => $order,
             'download_token' => $download_token,
+            'download_links' => $order->items
+                ->mapWithKeys(fn ($item): array => [
+                    $item->event_photo_id => URL::temporarySignedRoute(
+                        'orders.download',
+                        now()->addMinutes(15),
+                        [$order, $item->event_photo],
+                    ),
+                ])
+                ->all(),
         ]);
     }
 

@@ -8,9 +8,10 @@
                         <img src="{{ route('media.photos.thumbnail', $item->event_photo) }}" class="h-16 w-20 rounded-xl object-cover" alt="{{ $item->event_photo->filename }}">
                         <p class="text-sm font-semibold text-slate-800">{{ $item->event_photo->filename }}</p>
                     </div>
-                    <a href="{{ route('orders.download', [$order, $download_token, $item->event_photo]) }}" class="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Baixar foto</a>
+                    <a href="{{ $download_links[$item->event_photo_id] }}" class="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Baixar foto</a>
                 </div>
             @endforeach
         </div>
+        <p class="mt-4 text-xs text-slate-500">Cada link de download expira em 15 minutos por segurança. Reabra esta página para gerar novos links.</p>
     </div>
 </x-guest-layout>

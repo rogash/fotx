@@ -1,18 +1,23 @@
 <main class="min-h-screen bg-slate-50">
     <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:px-8">
         <form wire:submit="start_payment" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h1 class="text-2xl font-bold text-slate-950">Checkout</h1>
+            <p class="text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">Pagamento seguro</p>
+            <h1 class="mt-2 text-2xl font-bold text-slate-950">Finalizar compra</h1>
+            <p class="mt-2 text-sm leading-6 text-slate-500">Informe um email válido. Ele identifica seu pedido e será usado para acessar a página de downloads.</p>
             <div class="mt-6 space-y-4">
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Nome</label>
-                    <input wire:model="buyer_name" class="mt-2 w-full rounded-2xl border-slate-300 shadow-sm focus:border-slate-900 focus:ring-slate-900" />
+                    <label class="text-sm font-semibold text-slate-700">Nome opcional</label>
+                    <input wire:model="buyer_name" placeholder="Como devemos chamar você?" class="mt-2 w-full rounded-2xl border-slate-300 shadow-sm focus:border-slate-900 focus:ring-slate-900" />
                 </div>
                 <div>
                     <label class="text-sm font-semibold text-slate-700">Email</label>
-                    <input type="email" wire:model="buyer_email" class="mt-2 w-full rounded-2xl border-slate-300 shadow-sm focus:border-slate-900 focus:ring-slate-900" />
+                    <input type="email" wire:model="buyer_email" placeholder="voce@email.com" class="mt-2 w-full rounded-2xl border-slate-300 shadow-sm focus:border-slate-900 focus:ring-slate-900" />
                     @error('buyer_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-                <button @disabled($items->isEmpty()) class="w-full rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-40">Ir para pagamento</button>
+                <button @disabled($items->isEmpty()) class="w-full rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-40">
+                    {{ $items->isEmpty() ? 'Carrinho vazio' : 'Continuar para pagamento' }}
+                </button>
+                <p class="text-center text-xs text-slate-500">Depois da aprovação, você recebe acesso aos arquivos originais comprados.</p>
             </div>
         </form>
         <aside class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -22,7 +27,13 @@
                     <div class="flex justify-between text-sm"><span class="truncate">{{ $item['photo']->filename }}</span><span>R$ {{ number_format($item['price'], 2, ',', '.') }}</span></div>
                 @endforeach
             </div>
-            <div class="mt-6 border-t pt-4 text-xl font-bold">R$ {{ number_format($total, 2, ',', '.') }}</div>
+            <div class="mt-6 space-y-2 border-t pt-4">
+                <div class="flex justify-between text-sm text-slate-500"><span>Subtotal</span><span>R$ {{ number_format($summary['subtotal'], 2, ',', '.') }}</span></div>
+                @if ($summary['discount_amount'] > 0)
+                    <div class="flex justify-between text-sm font-semibold text-emerald-700"><span>Desconto por volume</span><span>-R$ {{ number_format($summary['discount_amount'], 2, ',', '.') }}</span></div>
+                @endif
+                <div class="flex justify-between text-xl font-bold text-slate-950"><span>Total</span><span>R$ {{ number_format($total, 2, ',', '.') }}</span></div>
+            </div>
         </aside>
     </div>
 </main>

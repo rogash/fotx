@@ -8,14 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['event_id', 'buyer_name', 'buyer_email', 'total_amount', 'status', 'payment_provider', 'payment_reference', 'payment_checkout_url', 'download_token', 'paid_at'])]
+#[Fillable(['public_id', 'event_id', 'buyer_name', 'buyer_email', 'total_amount', 'status', 'payment_provider', 'payment_reference', 'payment_checkout_url', 'download_token', 'paid_at'])]
 class Order extends Model
 {
     protected static function booted(): void
     {
         static::creating(function (Order $order): void {
+            $order->public_id ??= (string) Str::ulid();
             $order->download_token ??= Str::random(48);
         });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
     }
 
     protected function casts(): array

@@ -36,6 +36,21 @@ class User extends Authenticatable
         return $this->hasMany(Event::class);
     }
 
+    public function event_memberships(): HasMany
+    {
+        return $this->hasMany(EventMember::class);
+    }
+
+    public function uploaded_photos(): HasMany
+    {
+        return $this->hasMany(EventPhoto::class, 'uploaded_by');
+    }
+
+    public function attributed_photos(): HasMany
+    {
+        return $this->hasMany(EventPhoto::class, 'photographer_id');
+    }
+
     public function is_admin(): bool
     {
         return $this->role === 'admin';

@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventPhoto;
 use App\Models\FaceSearch;
 use App\Services\CartService;
+use App\Services\EventAnalyticsService;
 use App\Services\FaceRecognitionService;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Validate;
@@ -24,9 +25,13 @@ class SelfieSearch extends Component
     #[Validate('accepted')]
     public bool $consent_accepted = false;
 
+    public string $participant_query = '';
+
     public array $results = [];
 
     public bool $has_searched = false;
+
+    public string $result_source = '';
 
     public function search(FaceRecognitionService $face_recognition_service): void
     {
@@ -57,12 +62,69 @@ class SelfieSearch extends Component
             ->map(fn (array $result): array => [
                 'score' => $result['score'],
                 'photo' => $photos[$result['event_photo_id']] ?? null,
+                'source' => 'selfie',
             ])
             ->filter(fn (array $result): bool => $result['photo'] !== null)
             ->values()
             ->all();
 
         $this->has_searched = true;
+        $this->result_source = 'selfie';
+
+        app(EventAnalyticsService::class)->record(
+            event: $this->event,
+            type: 'selfie_search',
+            source: 'public_event',
+            metadata: ['results_count' => count($this->results)],
+        );
+    }
+
+    public function search_by_text(): void
+    {
+        $validated = $this->validate([
+            'participant_query' => ['required', 'string', 'min:2', 'max:120'],
+        ]);
+
+        $term = trim((string) $validated['participant_query']);
+        $like_term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
+        $normalized_term = mb_strtolower($term);
+
+        $photos = $this->event->ready_photos()
+            ->where(function ($query) use ($like_term): void {
+                $query
+                    ->where('participant_code', 'like', $like_term)
+                    ->orWhere('search_keywords', 'like', $like_term)
+                    ->orWhere('filename', 'like', $like_term);
+            })
+            ->limit(24)
+            ->get();
+
+        $this->results = $photos
+            ->map(function (EventPhoto $event_photo) use ($normalized_term): array {
+                $participant_code = mb_strtolower((string) $event_photo->participant_code);
+                $score = $participant_code === $normalized_term ? 1.0 : 0.82;
+
+                return [
+                    'score' => $score,
+                    'photo' => $event_photo,
+                    'source' => 'text',
+                ];
+            })
+            ->values()
+            ->all();
+
+        $this->has_searched = true;
+        $this->result_source = 'text';
+
+        app(EventAnalyticsService::class)->record(
+            event: $this->event,
+            type: 'text_search',
+            source: 'public_event',
+            metadata: [
+                'query' => $term,
+                'results_count' => count($this->results),
+            ],
+        );
     }
 
     private function too_many_search_attempts(): bool
@@ -82,17 +144,21 @@ class SelfieSearch extends Component
         return false;
     }
 
-    public function add_to_cart(int $event_photo_id, CartService $cart_service): void
+    public function add_to_cart(string $event_photo_public_id, CartService $cart_service): void
     {
-        $event_photo = EventPhoto::query()->with('event')->where('event_id', $this->event->id)->findOrFail($event_photo_id);
+        $event_photo = EventPhoto::query()
+            ->with('event')
+            ->where('event_id', $this->event->id)
+            ->where('public_id', $event_photo_public_id)
+            ->firstOrFail();
         $cart_service->add_photo($event_photo);
         $this->dispatch('cart-updated');
         session()->flash('status', 'Foto adicionada ao carrinho.');
     }
 
-    public function remove_from_cart(int $event_photo_id, CartService $cart_service): void
+    public function remove_from_cart(string $event_photo_public_id, CartService $cart_service): void
     {
-        $cart_service->remove_photo($event_photo_id);
+        $cart_service->remove_public_photo($event_photo_public_id);
         $this->dispatch('cart-updated');
         session()->flash('status', 'Foto removida do carrinho.');
     }

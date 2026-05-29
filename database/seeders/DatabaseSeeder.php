@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Event;
 use App\Models\EventPhoto;
+use App\Models\PhotoBatch;
 use App\Models\User;
 use App\Services\PhotoProcessingService;
 use Illuminate\Database\Seeder;
@@ -22,7 +23,7 @@ class DatabaseSeeder extends Seeder
 
         $photographer = User::query()->updateOrCreate(
             ['email' => 'fotografo@fotx.test'],
-            ['name' => 'Fotografo Demo', 'password' => Hash::make('password'), 'role' => 'photographer']
+            ['name' => 'Fotógrafo Demo', 'password' => Hash::make('password'), 'role' => 'photographer']
         );
 
         User::query()->updateOrCreate(
@@ -36,23 +37,33 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $photographer->id,
                 'name' => 'Casamento Demo Fotx',
                 'event_date' => now()->addDays(10)->toDateString(),
-                'location' => 'Sao Paulo, SP',
+                'location' => 'São Paulo, SP',
                 'description' => 'Uma galeria demonstrativa para testar busca por selfie, carrinho e downloads protegidos.',
                 'price_per_photo' => 29.90,
                 'status' => 'published',
             ]
         );
 
+        $event->members()->updateOrCreate(
+            ['user_id' => $photographer->id],
+            ['role' => 'owner'],
+        );
+
         if ($event->photos()->doesntExist()) {
-            $this->create_sample_photos($event);
+            $this->create_sample_photos($event, $photographer);
         }
 
         $event->update(['cover_photo_id' => $event->photos()->where('status', 'ready')->value('id')]);
     }
 
-    private function create_sample_photos(Event $event): void
+    private function create_sample_photos(Event $event, User $photographer): void
     {
         $disk = Storage::disk(config('filesystems.default'));
+        $batch = PhotoBatch::query()->create([
+            'event_id' => $event->id,
+            'uploaded_by' => $photographer->id,
+            'status' => 'uploading',
+        ]);
 
         foreach (range(1, 8) as $index) {
             $filename = "demo-{$index}.jpg";
@@ -68,8 +79,12 @@ class DatabaseSeeder extends Seeder
 
             $event_photo = EventPhoto::query()->create([
                 'event_id' => $event->id,
+                'photo_batch_id' => $batch->id,
+                'uploaded_by' => $photographer->id,
+                'photographer_id' => $photographer->id,
                 'original_path' => $path,
                 'filename' => $filename,
+                'file_hash' => hash_file('sha256', $absolute_path),
                 'mime_type' => 'image/jpeg',
                 'size_bytes' => filesize($absolute_path),
                 'status' => 'uploaded',
@@ -77,6 +92,8 @@ class DatabaseSeeder extends Seeder
 
             app(PhotoProcessingService::class)->process($event_photo);
         }
+
+        $batch->refresh_progress();
     }
 
     private function make_sample_image(string $path, int $index): void

@@ -32,7 +32,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        $events_query = Event::query()->when(! $user->is_admin(), fn ($query) => $query->where('user_id', $user->id));
+        $events_query = Event::query()->visibleTo($user);
 
         $event_ids = (clone $events_query)->pluck('id');
         $paid_orders = Order::query()->whereIn('event_id', $event_ids)->where('status', 'paid');

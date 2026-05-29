@@ -62,6 +62,13 @@ class EventForm extends Component
             [...$validated, 'user_id' => $this->event?->user_id ?? Auth::id()]
         );
 
+        if (! $this->event?->exists) {
+            $event->members()->updateOrCreate(
+                ['user_id' => Auth::id()],
+                ['role' => 'owner'],
+            );
+        }
+
         $this->redirectRoute('events.show', $event, navigate: true);
     }
 

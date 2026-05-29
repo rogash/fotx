@@ -9,7 +9,7 @@ class EventPhotoPolicy
 {
     public function view(User $user, EventPhoto $event_photo): bool
     {
-        return $user->is_admin() || $event_photo->event->user_id === $user->id;
+        return $user->can('view', $event_photo->event);
     }
 
     public function create(User $user): bool

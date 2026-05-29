@@ -25,11 +25,12 @@ class Checkout extends Component
 
         $event_id = $items->first()['event_id'];
         abort_if($items->pluck('event_id')->unique()->count() > 1, 422, 'O carrinho deve ter fotos de um único evento.');
+        $summary = $cart_service->summary();
 
         $order = Order::query()->create([
             ...$validated,
             'event_id' => $event_id,
-            'total_amount' => $cart_service->total(),
+            'total_amount' => $summary['total'],
             'status' => 'pending',
         ]);
 
@@ -56,6 +57,7 @@ class Checkout extends Component
     {
         return view('livewire.public.checkout', [
             'items' => $cart_service->get_items(),
+            'summary' => $cart_service->summary(),
             'total' => $cart_service->total(),
         ])->layout('layouts.public');
     }
