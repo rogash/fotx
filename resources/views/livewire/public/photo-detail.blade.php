@@ -9,7 +9,9 @@
 
         <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
             <section class="overflow-hidden rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
-                <img src="{{ route('media.photos.watermarked', $event_photo) }}" class="aspect-[4/3] w-full rounded-xl object-cover" alt="{{ $event_photo->filename }}">
+                <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+                    <img src="{{ route('media.photos.watermarked', $event_photo) }}" class="h-full w-full object-contain" alt="{{ $event_photo->filename }}">
+                </div>
             </section>
 
             <aside class="self-start rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

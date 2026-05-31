@@ -114,7 +114,7 @@
             <div class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
                 <div class="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
                     @if ($event_photo->thumbnail_path)
-                        <img src="{{ route('media.photos.thumbnail', $event_photo) }}" class="h-full w-full object-cover" alt="{{ $event_photo->filename }}">
+                        <img src="{{ route('media.photos.thumbnail', $event_photo) }}" class="h-full w-full object-contain" alt="{{ $event_photo->filename }}">
                     @endif
                 </div>
                 <div class="mt-3 space-y-3">

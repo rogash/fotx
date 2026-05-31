@@ -46,7 +46,7 @@
                 <div class="rounded-[2rem] bg-white/10 p-3 shadow-2xl shadow-slate-950/25 ring-1 ring-white/20 backdrop-blur">
                     <div class="aspect-[4/3] overflow-hidden rounded-[1.6rem] bg-slate-800">
                         @if ($event->cover_photo?->watermarked_path)
-                            <img src="{{ route('media.photos.watermarked', $event->cover_photo) }}" class="h-full w-full object-cover" alt="{{ $event->name }}">
+                            <img src="{{ route('media.photos.watermarked', $event->cover_photo) }}" class="h-full w-full object-contain" alt="{{ $event->name }}">
                         @else
                             <div class="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 to-emerald-900 text-3xl font-black text-white">FOTX</div>
                         @endif

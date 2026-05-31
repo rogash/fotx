@@ -65,7 +65,7 @@
                         <div class="rounded-2xl border border-slate-200 p-3">
                             <div class="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
                                 @if ($item->event_photo->thumbnail_path)
-                                    <img src="{{ route('media.photos.thumbnail', $item->event_photo) }}" class="h-full w-full object-cover" alt="{{ $item->event_photo->filename }}">
+                                    <img src="{{ route('media.photos.thumbnail', $item->event_photo) }}" class="h-full w-full object-contain" alt="{{ $item->event_photo->filename }}">
                                 @endif
                             </div>
                             <div class="mt-3 flex items-center justify-between gap-3">

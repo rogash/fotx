@@ -35,7 +35,7 @@
             <div class="rounded-[1.5rem] bg-slate-50 p-4 ring-1 ring-slate-200">
                 <div class="aspect-square overflow-hidden rounded-[1.25rem] bg-white">
                     @if ($selfie)
-                        <img src="{{ $selfie->temporaryUrl() }}" class="h-full w-full object-cover" alt="Preview da selfie">
+                        <img src="{{ $selfie->temporaryUrl() }}" class="h-full w-full object-contain" alt="Preview da selfie">
                     @else
                         <div class="flex h-full flex-col items-center justify-center px-6 text-center">
                             <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-xl font-black text-white">F</div>
@@ -97,7 +97,9 @@
                 @php $is_in_cart = in_array($result['photo']->id, $cart_photo_ids, true); @endphp
                 <div class="fotx-card p-3 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5">
                     <a href="{{ route('public.photos.show', [$event->slug, $result['photo']]) }}">
-                        <img src="{{ route('media.photos.watermarked', $result['photo']) }}" class="aspect-[4/3] w-full rounded-xl object-cover" alt="Foto encontrada">
+                        <span class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+                            <img src="{{ route('media.photos.watermarked', $result['photo']) }}" class="h-full w-full object-contain" alt="Foto encontrada">
+                        </span>
                     </a>
                     <p class="mt-3 truncate px-1 text-sm font-semibold text-slate-900">{{ $result['photo']->filename }}</p>
                     <div class="mt-4 flex items-center justify-between gap-3">

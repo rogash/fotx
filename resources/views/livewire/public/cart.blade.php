@@ -21,7 +21,9 @@
                 @forelse ($items as $item)
                     <div class="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex min-w-0 items-center gap-4">
-                            <img src="{{ route('media.photos.thumbnail', $item['photo']) }}" class="h-20 w-28 rounded-xl object-cover" alt="{{ $item['photo']->filename }}">
+                            <span class="flex h-20 w-28 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+                                <img src="{{ route('media.photos.thumbnail', $item['photo']) }}" class="h-full w-full object-contain" alt="{{ $item['photo']->filename }}">
+                            </span>
                             <div class="min-w-0">
                                 <p class="font-semibold text-slate-900">{{ $item['photo']->event->name }}</p>
                                 <p class="text-sm text-slate-500">{{ $item['photo']->filename }}</p>
