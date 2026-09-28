@@ -14,6 +14,7 @@
                     <input type="email" wire:model="buyer_email" placeholder="voce@email.com" class="mt-2 w-full rounded-2xl border-slate-300 shadow-sm focus:border-slate-900 focus:ring-slate-900" />
                     @error('buyer_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                @error('payment') <p class="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</p> @enderror
                 <button @disabled($items->isEmpty()) class="w-full rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-40">
                     {{ $items->isEmpty() ? 'Carrinho vazio' : 'Continuar para pagamento' }}
                 </button>

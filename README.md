@@ -139,15 +139,21 @@ PAYMENT_GATEWAY=mercado_pago
 MERCADO_PAGO_ACCESS_TOKEN=
 MERCADO_PAGO_PUBLIC_KEY=
 MERCADO_PAGO_INTEGRATOR_ID=
+MERCADO_PAGO_WEBHOOK_SECRET=
 ```
+
+A chave `MERCADO_PAGO_WEBHOOK_SECRET` fica no painel do Mercado Pago, em Suas integrações > Webhooks > Configurar notificações. A URL de notificação é `/payments/mercado-pago/webhook` e precisa ser pública.
 
 Fluxo atual:
 
-1. Checkout cria `orders.status = pending`.
+1. Checkout cria `orders.status = pending` e a preferência no gateway na mesma transação; se o gateway falhar, nenhum pedido é criado e o cliente vê uma mensagem de erro.
 2. Gateway cria `payment_reference` e `payment_checkout_url`.
-3. Mock permite aprovar manualmente.
-4. Mercado Pago usará webhook em `/payments/mercado-pago/webhook`.
-5. Downloads só são liberados quando o pedido vira `paid`.
+3. O Mercado Pago recebe um único item com o total do pedido, já com o desconto por volume.
+4. O webhook valida o header `x-signature`, consulta o pagamento na API, confere status `approved`, pedido (`external_reference`), moeda e valor, e marca o pedido como `paid`.
+5. Após a aprovação, `payment_reference` passa a guardar o ID do pagamento no Mercado Pago.
+6. Notificações repetidas não reaprovam o pedido nem duplicam métricas.
+7. Mock permite aprovar manualmente apenas fora de produção.
+8. Downloads só são liberados quando o pedido vira `paid`.
 
 ## Storage
 
