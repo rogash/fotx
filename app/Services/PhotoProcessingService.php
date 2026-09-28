@@ -40,8 +40,6 @@ class PhotoProcessingService
                 'height' => $height,
                 'status' => 'ready',
             ]);
-
-            IndexPhotoFacesJob::dispatch($event_photo);
         } catch (Throwable) {
             $event_photo->update(['status' => 'failed']);
         } finally {
@@ -52,6 +50,11 @@ class PhotoProcessingService
                     unlink($temporary_path);
                 }
             }
+        }
+
+        // Fora do try: falha na indexação facial não deve marcar a foto processada como falha.
+        if ($event_photo->status === 'ready') {
+            IndexPhotoFacesJob::dispatch($event_photo);
         }
 
         return $event_photo->fresh();

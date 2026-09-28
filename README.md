@@ -87,10 +87,37 @@ Também há detalhe individual, exportação CSV, QR Code e cartaz:
 
 ## Reconhecimento facial
 
-O serviço real ainda não foi implementado. A classe `App\Services\FaceRecognitionService` já isola a integração futura e documenta o endpoint planejado:
+A busca por selfie usa drivers configuráveis em `App\Services\FaceRecognition`, escolhidos por `FACE_RECOGNITION_DRIVER`:
 
-```text
-POST http://127.0.0.1:8001/search-face
+- `mock`: desenvolvimento; indexa um rosto fictício por foto e devolve fotos aleatórias. Bloqueado em produção.
+- `rekognition`: Amazon Rekognition, com uma coleção de rostos por evento.
+
+```env
+FACE_RECOGNITION_DRIVER=rekognition
+FACE_MATCH_THRESHOLD=90
+FACE_SEARCH_MAX_RESULTS=50
+REKOGNITION_REGION=sa-east-1
+REKOGNITION_ACCESS_KEY_ID=
+REKOGNITION_SECRET_ACCESS_KEY=
+REKOGNITION_COLLECTION_PREFIX=
+```
+
+- `FACE_MATCH_THRESHOLD` é a semelhança mínima, em porcentagem, para uma foto aparecer no resultado.
+- Sem chaves no `.env`, o SDK da AWS usa a cadeia padrão de credenciais (por exemplo, IAM role).
+- O prefixo padrão das coleções é `fotx-<APP_ENV>`, para ambientes diferentes não compartilharem rostos.
+- Configure na conta AWS a política de opt-out de uso de dados pelos serviços de IA (AWS Organizations), para que as imagens não sejam usadas no treinamento de modelos da AWS.
+
+Fluxo:
+
+1. Depois do processamento, `IndexPhotoFacesJob` envia ao provedor uma cópia JPEG redimensionada da foto original, sem marca d'água, e grava os rostos em `photo_faces`.
+2. A busca envia a selfie e devolve só as fotos prontas com semelhança acima do limite, com a melhor pontuação por foto.
+3. Selfie sem rosto ou falha do provedor marcam a busca como `failed` e exibem mensagem ao cliente.
+4. Excluir uma foto remove os rostos dela no provedor; excluir um evento remove a coleção inteira.
+
+O job tenta de novo com espera crescente, porque o Rekognition limita chamadas por segundo (5 por padrão em São Paulo). Para indexar fotos já enviadas ou reindexar depois de trocar de driver:
+
+```bash
+php artisan fotx:index-faces {id-ou-slug-do-evento}
 ```
 
 ## Segurança do MVP

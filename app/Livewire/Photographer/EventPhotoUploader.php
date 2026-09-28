@@ -6,6 +6,7 @@ use App\Jobs\ProcessEventPhotoJob;
 use App\Models\Event;
 use App\Models\EventPhoto;
 use App\Models\PhotoBatch;
+use App\Services\FaceRecognitionService;
 use App\Services\PhotoMetadataCsvImporter;
 use App\Services\PhotoProcessingService;
 use Illuminate\Support\Facades\Auth;
@@ -149,7 +150,7 @@ class EventPhotoUploader extends Component
         session()->flash('status', "{$pending_photos->count()} foto(s) pendente(s) processada(s).");
     }
 
-    public function delete_photo(int $event_photo_id): void
+    public function delete_photo(int $event_photo_id, FaceRecognitionService $face_recognition_service): void
     {
         $this->authorize('editPhotos', $this->event);
 
@@ -158,6 +159,8 @@ class EventPhotoUploader extends Component
         if ($this->event->cover_photo_id === $event_photo->id) {
             $this->event->update(['cover_photo_id' => null]);
         }
+
+        $face_recognition_service->forget_photo($event_photo);
 
         Storage::disk(config('filesystems.default'))->delete(array_filter([
             $event_photo->original_path,
