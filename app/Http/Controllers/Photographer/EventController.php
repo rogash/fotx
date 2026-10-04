@@ -8,6 +8,7 @@ use App\Models\EventMember;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\EventQrCodeService;
+use App\Services\FaceRecognitionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -225,9 +226,11 @@ class EventController extends Controller
         return redirect()->route('events.show', $event)->with('status', 'Evento arquivado. Ele não aparece mais para clientes.');
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event, FaceRecognitionService $face_recognition_service): RedirectResponse
     {
         $this->authorize('delete', $event);
+
+        $face_recognition_service->forget_event($event);
 
         $disk = Storage::disk(config('filesystems.default'));
         $event->photos()

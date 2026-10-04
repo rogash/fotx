@@ -7,11 +7,14 @@ use App\Models\EventPhoto;
 use App\Models\FaceSearch;
 use App\Services\CartService;
 use App\Services\EventAnalyticsService;
+use App\Services\FaceRecognition\NoFaceDetectedException;
 use App\Services\FaceRecognitionService;
+use Aws\Exception\AwsException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use RuntimeException;
 
 class SelfieSearch extends Component
 {
@@ -52,7 +55,21 @@ class SelfieSearch extends Component
             'expires_at' => now()->addHours(config('fotx.face_selfie_ttl_hours', 24)),
         ]);
 
-        $results = $face_recognition_service->search_by_selfie($this->event, $path);
+        try {
+            $results = $face_recognition_service->search_by_selfie($this->event, $path);
+        } catch (NoFaceDetectedException) {
+            $face_search->update(['status' => 'failed']);
+            $this->addError('selfie', 'Não encontramos um rosto nesta selfie. Tente outra foto, de frente e com boa iluminação.');
+
+            return;
+        } catch (AwsException|RuntimeException $exception) {
+            report($exception);
+            $face_search->update(['status' => 'failed']);
+            $this->addError('selfie', 'Não foi possível buscar suas fotos agora. Tente novamente em instantes.');
+
+            return;
+        }
+
         $face_search->update(['status' => 'done', 'results' => $results]);
 
         $photo_ids = collect($results)->pluck('event_photo_id')->all();
