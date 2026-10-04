@@ -11,6 +11,7 @@ return [
     'mercado_pago_access_token' => env('MERCADO_PAGO_ACCESS_TOKEN'),
     'mercado_pago_public_key' => env('MERCADO_PAGO_PUBLIC_KEY'),
     'mercado_pago_integrator_id' => env('MERCADO_PAGO_INTEGRATOR_ID'),
+    'mercado_pago_webhook_secret' => env('MERCADO_PAGO_WEBHOOK_SECRET'),
     'cart_volume_discounts' => [
         3 => 0.15,
         5 => 0.20,

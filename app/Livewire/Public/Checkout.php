@@ -5,7 +5,10 @@ namespace App\Livewire\Public;
 use App\Models\Order;
 use App\Services\CartService;
 use App\Services\Payments\PaymentGatewayManager;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use RuntimeException;
 
 class Checkout extends Component
 {
@@ -27,26 +30,38 @@ class Checkout extends Component
         abort_if($items->pluck('event_id')->unique()->count() > 1, 422, 'O carrinho deve ter fotos de um único evento.');
         $summary = $cart_service->summary();
 
-        $order = Order::query()->create([
-            ...$validated,
-            'event_id' => $event_id,
-            'total_amount' => $summary['total'],
-            'status' => 'pending',
-        ]);
+        try {
+            // Se o gateway falhar, o rollback evita pedidos pendentes sem link de pagamento.
+            $order = DB::transaction(function () use ($validated, $event_id, $summary, $items, $payment_gateway_manager): Order {
+                $order = Order::query()->create([
+                    ...$validated,
+                    'event_id' => $event_id,
+                    'total_amount' => $summary['total'],
+                    'status' => 'pending',
+                ]);
 
-        foreach ($items as $item) {
-            $order->items()->create([
-                'event_photo_id' => $item['event_photo_id'],
-                'price' => $item['price'],
-            ]);
+                foreach ($items as $item) {
+                    $order->items()->create([
+                        'event_photo_id' => $item['event_photo_id'],
+                        'price' => $item['price'],
+                    ]);
+                }
+
+                $checkout_data = $payment_gateway_manager->gateway()->create_checkout($order->load(['event', 'items.event_photo']));
+                $order->update([
+                    'payment_provider' => $checkout_data->provider,
+                    'payment_reference' => $checkout_data->reference,
+                    'payment_checkout_url' => $checkout_data->checkout_url,
+                ]);
+
+                return $order;
+            });
+        } catch (RuntimeException|ConnectionException $exception) {
+            report($exception);
+            $this->addError('payment', 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes.');
+
+            return;
         }
-
-        $checkout_data = $payment_gateway_manager->gateway()->create_checkout($order->load(['event', 'items.event_photo']));
-        $order->update([
-            'payment_provider' => $checkout_data->provider,
-            'payment_reference' => $checkout_data->reference,
-            'payment_checkout_url' => $checkout_data->checkout_url,
-        ]);
 
         $cart_service->clear();
 

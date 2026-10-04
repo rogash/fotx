@@ -13,11 +13,14 @@ use App\Models\Order;
 use App\Models\PhotoBatch;
 use App\Models\User;
 use App\Services\CartService;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -260,6 +263,142 @@ class FotxMvpTest extends TestCase
             'type' => 'paid_order',
             'source' => 'mock',
         ]);
+    }
+
+    public function test_mock_payment_approval_is_unavailable_in_production(): void
+    {
+        $event = Event::factory()->create();
+        $order = Order::query()->create([
+            'event_id' => $event->id,
+            'buyer_email' => 'cliente@fotx.test',
+            'total_amount' => 20,
+            'status' => 'pending',
+            'payment_provider' => 'mock',
+            'payment_reference' => 'MOCK-PREF-123',
+        ]);
+
+        app()->detectEnvironment(fn (): string => 'production');
+
+        $this->withoutMiddleware(PreventRequestForgery::class)
+            ->post(route('payments.mock.approve', [$order, $order->download_token]))
+            ->assertNotFound();
+
+        $this->assertSame('pending', $order->refresh()->status);
+    }
+
+    public function test_checkout_does_not_use_mock_gateway_in_production(): void
+    {
+        $event = Event::factory()->create(['price_per_photo' => 25.00]);
+        app(CartService::class)->add_photo(EventPhoto::factory()->create(['event_id' => $event->id])->load('event'));
+
+        app()->detectEnvironment(fn (): string => 'production');
+
+        Livewire::test(Checkout::class)
+            ->set('buyer_email', 'cliente@fotx.test')
+            ->call('start_payment')
+            ->assertHasErrors('payment');
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_mercado_pago_checkout_charges_discounted_total_as_single_item(): void
+    {
+        $this->configure_mercado_pago();
+        Http::fake([
+            'api.mercadopago.com/checkout/preferences' => Http::response(['id' => 'PREF-123', 'init_point' => 'https://mercadopago.test/checkout']),
+        ]);
+
+        $event = Event::factory()->create(['price_per_photo' => 25.00]);
+        EventPhoto::factory()->count(3)->create(['event_id' => $event->id])
+            ->each(fn (EventPhoto $event_photo) => app(CartService::class)->add_photo($event_photo->load('event')));
+
+        Livewire::test(Checkout::class)
+            ->set('buyer_email', 'mp@fotx.test')
+            ->call('start_payment');
+
+        $order = Order::query()->where('buyer_email', 'mp@fotx.test')->firstOrFail();
+
+        $this->assertSame('mercado_pago', $order->payment_provider);
+        $this->assertSame('PREF-123', $order->payment_reference);
+        Http::assertSent(fn ($request): bool => count($request['items']) === 1
+            && $request['items'][0]['quantity'] === 1
+            && $request['items'][0]['unit_price'] === 63.75
+            && $request['external_reference'] === $order->public_id);
+    }
+
+    public function test_checkout_keeps_cart_and_creates_no_order_when_gateway_fails(): void
+    {
+        $this->configure_mercado_pago();
+        Http::fake([
+            'api.mercadopago.com/checkout/preferences' => Http::response(['message' => 'erro'], 500),
+        ]);
+
+        $event = Event::factory()->create(['price_per_photo' => 25.00]);
+        app(CartService::class)->add_photo(EventPhoto::factory()->create(['event_id' => $event->id])->load('event'));
+
+        Livewire::test(Checkout::class)
+            ->set('buyer_email', 'falha@fotx.test')
+            ->call('start_payment')
+            ->assertHasErrors('payment');
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+        $this->assertSame(1, app(CartService::class)->count());
+    }
+
+    public function test_mercado_pago_webhook_marks_order_as_paid_once(): void
+    {
+        $this->configure_mercado_pago();
+        $order = $this->create_mercado_pago_order(63.75);
+        $this->fake_mercado_pago_payment($order, ['transaction_amount' => 63.75]);
+
+        $this->send_mercado_pago_webhook('987654')->assertOk();
+        $this->send_mercado_pago_webhook('987654')->assertOk();
+
+        $order->refresh();
+        $this->assertSame('paid', $order->status);
+        $this->assertSame('987654', $order->payment_reference);
+        $this->assertNotNull($order->paid_at);
+        $this->assertDatabaseCount('event_analytics', 1);
+        $this->assertDatabaseHas('event_analytics', [
+            'order_id' => $order->id,
+            'type' => 'paid_order',
+            'source' => 'mercado_pago',
+        ]);
+    }
+
+    public function test_mercado_pago_webhook_rejects_invalid_signature(): void
+    {
+        $this->configure_mercado_pago();
+        $order = $this->create_mercado_pago_order(63.75);
+        $this->fake_mercado_pago_payment($order, ['transaction_amount' => 63.75]);
+
+        $this->send_mercado_pago_webhook('987654', secret: 'segredo-errado')->assertUnauthorized();
+
+        $this->assertSame('pending', $order->refresh()->status);
+        Http::assertNothingSent();
+    }
+
+    public function test_mercado_pago_webhook_ignores_amount_divergent_from_order(): void
+    {
+        $this->configure_mercado_pago();
+        $order = $this->create_mercado_pago_order(63.75);
+        $this->fake_mercado_pago_payment($order, ['transaction_amount' => 1.00]);
+
+        $this->send_mercado_pago_webhook('987654')->assertOk();
+
+        $this->assertSame('pending', $order->refresh()->status);
+    }
+
+    public function test_mercado_pago_webhook_keeps_order_pending_when_payment_not_approved(): void
+    {
+        $this->configure_mercado_pago();
+        $order = $this->create_mercado_pago_order(63.75);
+        $this->fake_mercado_pago_payment($order, ['transaction_amount' => 63.75, 'status' => 'rejected']);
+
+        $this->send_mercado_pago_webhook('987654')->assertOk();
+
+        $this->assertSame('pending', $order->refresh()->status);
     }
 
     public function test_public_results_can_add_and_remove_photo_from_cart(): void
@@ -675,5 +814,52 @@ class FotxMvpTest extends TestCase
             ->assertSee('Encontre suas fotos deste evento.')
             ->assertSee($event->public_url())
             ->assertSee(route('events.qr-code', $event));
+    }
+
+    private function configure_mercado_pago(): void
+    {
+        config([
+            'fotx.payment_gateway' => 'mercado_pago',
+            'fotx.mercado_pago_access_token' => 'token-teste',
+            'fotx.mercado_pago_webhook_secret' => 'segredo-teste',
+        ]);
+    }
+
+    private function create_mercado_pago_order(float $total_amount): Order
+    {
+        return Order::query()->create([
+            'event_id' => Event::factory()->create()->id,
+            'buyer_email' => 'mp@fotx.test',
+            'total_amount' => $total_amount,
+            'status' => 'pending',
+            'payment_provider' => 'mercado_pago',
+            'payment_reference' => 'PREF-123',
+        ]);
+    }
+
+    private function fake_mercado_pago_payment(Order $order, array $overrides): void
+    {
+        Http::fake([
+            'api.mercadopago.com/v1/payments/*' => Http::response([
+                'id' => 987654,
+                'status' => 'approved',
+                'currency_id' => 'BRL',
+                'external_reference' => $order->public_id,
+                ...$overrides,
+            ]),
+        ]);
+    }
+
+    private function send_mercado_pago_webhook(string $payment_id, string $secret = 'segredo-teste'): TestResponse
+    {
+        $timestamp = '1742505638683';
+        $request_id = 'req-'.$payment_id;
+        $hash = hash_hmac('sha256', "id:{$payment_id};request-id:{$request_id};ts:{$timestamp};", $secret);
+
+        return $this->postJson(
+            route('payments.mercado-pago.webhook').'?data.id='.$payment_id.'&type=payment',
+            ['type' => 'payment', 'data' => ['id' => $payment_id]],
+            ['x-signature' => "ts={$timestamp},v1={$hash}", 'x-request-id' => $request_id],
+        );
     }
 }
