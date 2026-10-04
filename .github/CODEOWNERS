@@ -1,0 +1,3 @@
+# Pede automaticamente a revisão de @rogash em todo PR aberto por outra pessoa
+# ou por bots (ex.: Dependabot), para que apareça em "Needs your review".
+* @rogash
