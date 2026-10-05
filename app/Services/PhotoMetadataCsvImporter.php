@@ -42,6 +42,7 @@ class PhotoMetadataCsvImporter
 
             if (! $event_photo) {
                 $skipped_rows++;
+
                 continue;
             }
 

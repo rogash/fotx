@@ -1,7 +1,5 @@
 version: 2
 
-# Sem CI: os PRs do Dependabot nao passam por testes automaticos; rodar a
-# suite localmente antes do merge.
 updates:
   - package-ecosystem: "composer"
     directory: "/"
@@ -51,3 +49,17 @@ updates:
       npm-development:
         applies-to: "version-updates"
         dependency-type: "development"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        applies-to: "version-updates"
+        patterns:
+          - "*"

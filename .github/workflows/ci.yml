@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: PHP checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, exif, intl, zip
+          coverage: none
+
+      - name: Validate Composer config
+        run: composer validate --strict
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Audit Composer dependencies
+        run: composer audit --locked --abandoned=report
+
+      # O Dependabot resolve com o menor PHP aceito pelo require.php do
+      # composer.json. Se o lock passar a exigir mais que isso (ex.: composer
+      # update rodado num PHP local mais novo), todo update dele falha e o job
+      # ainda termina "success", sem abrir PR. Aqui o lock é instalado em
+      # dry-run com a plataforma nesse piso; o override vai no próprio lock,
+      # que é de onde o install lê.
+      - name: Check lock installs on the require.php PHP floor
+        run: |
+          PISO=$(php -r '$r = json_decode(file_get_contents("composer.json"), true)["require"]["php"] ?? ""; if (!preg_match("/^\^(\d+)\.(\d+)(?:\.(\d+))?$/", $r, $m)) { fwrite(STDERR, "require.php \"$r\" fora do formato ^X.Y ou ^X.Y.Z\n"); exit(1); } echo "$m[1].$m[2]." . ($m[3] ?? "0");')
+          DIR="$RUNNER_TEMP/piso-php"
+          mkdir -p "$DIR"
+          cp composer.json composer.lock "$DIR/"
+          php -r '$l = json_decode(file_get_contents($argv[1]), true); $l["platform-overrides"] = ["php" => $argv[2]]; file_put_contents($argv[1], json_encode($l, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));' "$DIR/composer.lock" "$PISO"
+          if ! composer install --working-dir="$DIR" --dry-run --no-scripts --no-plugins --no-interaction --no-progress > "$DIR/saida.txt" 2>&1; then
+            cat "$DIR/saida.txt"
+            echo "::error::O composer.lock exige PHP acima de $PISO, o piso do require.php. Suba o require.php para o menor 8.5.x que atende o lock e rode composer update --lock; senão todo update do Dependabot falha sem abrir PR."
+            exit 1
+          fi
+          echo "composer.lock instala com PHP $PISO (piso do require.php)."
+
+      - name: Check PHP style
+        run: vendor/bin/pint --test
+
+      # As views usam @vite: sem o manifest gerado pelo build, os testes de
+      # páginas falham. Por isso o build roda neste job, antes dos testes.
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Build assets
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Run tests
+        run: php artisan test
