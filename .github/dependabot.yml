@@ -1,0 +1,53 @@
+version: 2
+
+# Sem CI: os PRs do Dependabot nao passam por testes automaticos; rodar a
+# suite localmente antes do merge.
+updates:
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    # "all" inclui as transitivas (symfony/*, guzzle...), que so mudam no
+    # composer.lock. O Dependabot resolve com o menor PHP aceito pelo
+    # require.php do composer.json: se o lock passar a exigir um patch maior,
+    # suba esse piso, senao todo update falha e o job ainda termina "success".
+    allow:
+      - dependency-type: "all"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+    # Agrupa por tipo: um PR para deps de producao (runtime) e outro para as de
+    # desenvolvimento (pint, phpunit e afins). Majors ficam de fora (a mao).
+    groups:
+      composer-production:
+        applies-to: "version-updates"
+        dependency-type: "production"
+      composer-development:
+        applies-to: "version-updates"
+        dependency-type: "development"
+
+  # Assets de build (Vite/Tailwind). Mesmo criterio: producao x dev.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+    groups:
+      npm-production:
+        applies-to: "version-updates"
+        dependency-type: "production"
+      npm-development:
+        applies-to: "version-updates"
+        dependency-type: "development"
