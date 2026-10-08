@@ -26,12 +26,14 @@ class EventForm extends Component
 
     public string $status = 'draft';
 
+    public bool $public_gallery = false;
+
     public function mount(?Event $event = null): void
     {
         if ($event?->exists) {
             $this->authorize('update', $event);
             $this->event = $event;
-            $this->fill($event->only(['name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status']));
+            $this->fill($event->only(['name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status', 'public_gallery']));
             $this->event_date = $event->event_date?->format('Y-m-d');
         } else {
             $this->authorize('create', Event::class);
@@ -55,6 +57,7 @@ class EventForm extends Component
             'description' => ['nullable', 'string', 'max:5000'],
             'price_per_photo' => ['required', 'numeric', 'min:1', 'max:999999'],
             'status' => ['required', Rule::in(['draft', 'published', 'archived'])],
+            'public_gallery' => ['boolean'],
         ]);
 
         $event = Event::query()->updateOrCreate(

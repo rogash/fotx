@@ -96,6 +96,28 @@ class CartService
         return round($this->subtotal() * $this->discount_percent(), 2);
     }
 
+    /**
+     * Próxima faixa de desconto por volume, para incentivar o cliente a
+     * completar o pedido. Null quando já está na maior faixa.
+     *
+     * @return array{missing_photos: int, percent: float}|null
+     */
+    public function next_discount(): ?array
+    {
+        $item_count = $this->count();
+
+        foreach (config('fotx.cart_volume_discounts', []) as $minimum_quantity => $tier_discount_percent) {
+            if ($item_count < (int) $minimum_quantity) {
+                return [
+                    'missing_photos' => (int) $minimum_quantity - $item_count,
+                    'percent' => (float) $tier_discount_percent,
+                ];
+            }
+        }
+
+        return null;
+    }
+
     public function summary(): array
     {
         return [

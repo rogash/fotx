@@ -1,76 +1,69 @@
-<main class="min-h-screen bg-[#f5f5f7]">
-    <section class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-[linear-gradient(180deg,_#020617_0%,_#0f172a_64%,_#f5f5f7_64%)]"></div>
-        <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <nav class="flex items-center justify-between text-white">
-                <a href="{{ route('public.events.show', $event->slug) }}" class="inline-flex items-center">
-                    <x-brand.logo variant="light" class="h-10 w-auto" />
-                </a>
-                <livewire:public.cart-badge />
-            </nav>
+<div>
+    <x-public.header :event="$event" />
 
-            <div class="grid min-h-[76vh] items-center gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr]">
-                <div class="text-white">
-                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-200">{{ $event->location ?: 'Evento Fotx' }}</p>
-                    <h1 class="mt-5 max-w-3xl text-5xl font-semibold leading-[0.98] sm:text-7xl">Encontre suas fotos em segundos</h1>
-                    <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-200">Busque por selfie, número de peito, nome ou equipe. Escolha suas fotos, pague online e baixe os arquivos originais com segurança.</p>
-                    <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#buscar" class="rounded-full bg-white px-6 py-4 text-sm font-bold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5">Encontrar minhas fotos</a>
+    <main>
+        <section class="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-10 lg:px-8">
+            <div class="grid items-center gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+                <div class="order-2 lg:order-1">
+                    <p class="text-sm font-semibold text-emerald-700">
+                        {{ collect([$event->event_date?->translatedFormat('j \d\e F \d\e Y'), $event->location])->filter()->implode(' · ') ?: 'Galeria do evento' }}
+                    </p>
+                    <h1 class="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">{{ $event->name }}</h1>
+                    <p class="mt-4 max-w-xl text-lg leading-8 text-slate-600">
+                        Encontre suas fotos em segundos: envie uma selfie ou busque pelo seu número e baixe em alta resolução.
+                    </p>
+
+                    <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-600">
+                        <span><strong class="text-lg font-bold text-slate-950">{{ number_format($photos_count, 0, ',', '.') }}</strong> fotos</span>
+                        <span><strong class="text-lg font-bold text-slate-950">R$ {{ number_format((float) $event->price_per_photo, 2, ',', '.') }}</strong> por foto</span>
+                    </div>
+
+                    @if ($discount_tiers)
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            @foreach ($discount_tiers as $minimum_quantity => $tier_discount_percent)
+                                <span class="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-100">
+                                    {{ $minimum_quantity }}+ fotos: {{ number_format($tier_discount_percent * 100, 0) }}% off
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <div class="mt-7 flex flex-wrap items-center gap-3">
+                        <a href="#buscar" class="fotx-button-primary px-6 py-3.5">Encontrar minhas fotos</a>
                         @if (filled(config('fotx.whatsapp_number')))
-                            <a
-                                href="{{ route('tracking.events.whatsapp', $event->slug) }}"
-                                target="_blank"
-                                rel="noopener"
-                                class="rounded-full border border-white/25 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10"
-                            >
+                            <a href="{{ route('tracking.events.whatsapp', $event->slug) }}" target="_blank" rel="noopener" class="fotx-button-secondary px-6 py-3.5">
                                 Falar no WhatsApp
                             </a>
                         @endif
-                        <span class="text-sm font-semibold text-slate-200">R$ {{ number_format((float) $event->price_per_photo, 2, ',', '.') }} por foto</span>
-                    </div>
-                    <div class="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
-                        <div class="rounded-[1.4rem] bg-white/10 p-4 ring-1 ring-white/15">
-                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">1. Busque</p>
-                            <p class="mt-2 text-sm text-slate-200">Selfie ou número do evento.</p>
-                        </div>
-                        <div class="rounded-[1.4rem] bg-white/10 p-4 ring-1 ring-white/15">
-                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">2. Escolha</p>
-                            <p class="mt-2 text-sm text-slate-200">Veja previews com marca d'água.</p>
-                        </div>
-                        <div class="rounded-[1.4rem] bg-white/10 p-4 ring-1 ring-white/15">
-                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">3. Baixe</p>
-                            <p class="mt-2 text-sm text-slate-200">Originais liberados após pagar.</p>
-                        </div>
                     </div>
                 </div>
-                <div class="rounded-[2rem] bg-white/10 p-3 shadow-2xl shadow-slate-950/25 ring-1 ring-white/20 backdrop-blur">
-                    <div class="aspect-[4/3] overflow-hidden rounded-[1.6rem] bg-slate-800">
+
+                <div class="order-1 lg:order-2">
+                    <div class="aspect-[4/3] overflow-hidden rounded-3xl bg-slate-200 shadow-xl shadow-slate-900/10 ring-1 ring-slate-900/5">
                         @if ($event->cover_photo?->watermarked_path)
-                            <img src="{{ route('media.photos.watermarked', $event->cover_photo) }}" class="h-full w-full object-contain" alt="{{ $event->name }}">
+                            <img src="{{ route('media.photos.watermarked', $event->cover_photo) }}" class="h-full w-full object-cover" alt="Capa do evento {{ $event->name }}">
                         @else
-                            <div class="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 to-emerald-900 text-3xl font-black text-white">FOTX</div>
+                            <div class="flex h-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
+                                <x-brand.logo variant="light" class="h-12 w-auto opacity-80" />
+                            </div>
                         @endif
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="buscar" class="bg-[#f5f5f7] py-14">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Galeria do evento</p>
-                    <h2 class="mt-2 text-3xl font-bold text-slate-950">{{ $event->name }}</h2>
-                    @if ($event->description)
-                        <p class="mt-3 max-w-3xl text-slate-600">{{ $event->description }}</p>
-                    @endif
-                </div>
-                <div class="rounded-full bg-white/80 px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
-                    R$ {{ number_format((float) $event->price_per_photo, 2, ',', '.') }} por foto
-                </div>
-            </div>
+        <section id="buscar" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+            @if ($event->description)
+                <p class="mb-6 max-w-3xl text-sm leading-6 text-slate-500">{{ $event->description }}</p>
+            @endif
             <livewire:public.selfie-search :event="$event" />
-        </div>
-    </section>
-</main>
+        </section>
+
+        <footer class="border-t border-slate-200/70 py-8">
+            <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
+                <p>Prévias com marca d'água · Pagamento seguro · Originais em alta resolução após a aprovação</p>
+                <p>Galeria por <a href="https://fotx.com.br" class="font-semibold text-slate-700 hover:text-slate-950">Fotx</a></p>
+            </div>
+        </footer>
+    </main>
+</div>

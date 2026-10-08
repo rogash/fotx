@@ -8,7 +8,6 @@ use App\Http\Controllers\Public\MediaController;
 use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\PaymentController;
 use App\Http\Controllers\Public\TrackingController;
-use App\Livewire\Public\Cart;
 use App\Livewire\Public\Checkout;
 use App\Livewire\Public\EventPage;
 use App\Livewire\Public\PhotoDetail;
@@ -49,7 +48,7 @@ Route::get('/e/{slug}/photos/{event_photo}', PhotoDetail::class)->name('public.p
 Route::get('/track/events/{slug}/whatsapp', [TrackingController::class, 'whatsapp'])->name('tracking.events.whatsapp');
 Route::get('/media/photos/{event_photo}/thumbnail', [MediaController::class, 'thumbnail'])->name('media.photos.thumbnail');
 Route::get('/media/photos/{event_photo}/watermarked', [MediaController::class, 'watermarked'])->name('media.photos.watermarked');
-Route::get('/cart', Cart::class)->name('cart.show');
+Route::redirect('/cart', '/checkout')->name('cart.show');
 Route::get('/checkout', Checkout::class)->name('checkout.show');
 Route::post('/payments/mock/{order}/{download_token}/approve', [PaymentController::class, 'approve_mock'])->name('payments.mock.approve');
 Route::post('/payments/mercado-pago/webhook', [PaymentController::class, 'mercado_pago_webhook'])->name('payments.mercado-pago.webhook');

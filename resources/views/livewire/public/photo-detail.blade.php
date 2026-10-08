@@ -1,65 +1,64 @@
-<main class="min-h-screen bg-slate-50">
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav class="flex items-center justify-between">
-            <a href="{{ route('public.events.show', $event->slug) }}" class="inline-flex items-center">
-                <x-brand.logo class="h-10 w-auto" />
-            </a>
-            <livewire:public.cart-badge />
-        </nav>
+<div>
+    <x-public.header :event="$event" />
 
-        <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
-            <section class="overflow-hidden rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
-                <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                    <img src="{{ route('media.photos.watermarked', $event_photo) }}" class="h-full w-full object-contain" alt="{{ $event_photo->filename }}">
+    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        <a href="{{ route('public.events.show', $event->slug) }}#buscar" class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/></svg>
+            Voltar às fotos
+        </a>
+
+        <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_360px] lg:gap-8">
+            <section class="overflow-hidden rounded-3xl bg-white p-2 shadow-sm ring-1 ring-slate-200/80">
+                <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+                    <img src="{{ route('media.photos.watermarked', $event_photo) }}" class="h-full w-full object-contain" alt="Foto do evento {{ $event->name }}">
                 </div>
             </section>
 
-            <aside class="self-start rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ $event->name }}</p>
-                <h1 class="mt-3 text-2xl font-bold text-slate-950">Foto do evento</h1>
-                <p class="mt-2 text-sm text-slate-500">{{ $event_photo->filename }}</p>
+            <aside class="fotx-card self-start p-6">
+                <p class="text-sm font-semibold text-emerald-700">{{ $event->name }}</p>
+                <h1 class="mt-2 text-2xl font-bold text-slate-950">Foto do evento</h1>
 
                 @if ($event_photo->participant_code || $event_photo->search_keywords)
-                    <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                    <dl class="mt-4 space-y-1 text-sm text-slate-600">
                         @if ($event_photo->participant_code)
-                            <p><span class="font-semibold text-slate-800">Número:</span> {{ $event_photo->participant_code }}</p>
+                            <div><dt class="inline font-semibold text-slate-800">Número:</dt> <dd class="inline">{{ $event_photo->participant_code }}</dd></div>
                         @endif
                         @if ($event_photo->search_keywords)
-                            <p class="mt-1"><span class="font-semibold text-slate-800">Tags:</span> {{ $event_photo->search_keywords }}</p>
+                            <div><dt class="inline font-semibold text-slate-800">Tags:</dt> <dd class="inline">{{ $event_photo->search_keywords }}</dd></div>
                         @endif
-                    </div>
+                    </dl>
                 @endif
 
-                <div class="mt-6 rounded-2xl bg-emerald-50 p-4">
-                    <p class="text-sm font-medium text-emerald-900">Foto digital em alta resolução</p>
-                    <p class="mt-1 text-3xl font-black text-emerald-950">R$ {{ number_format((float) $event->price_per_photo, 2, ',', '.') }}</p>
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    <p class="text-sm text-slate-500">Foto digital em alta resolução, sem marca d'água</p>
+                    <p class="mt-1 text-3xl font-bold text-slate-950">R$ {{ number_format((float) $event->price_per_photo, 2, ',', '.') }}</p>
+                    @if ($next_discount)
+                        <p class="mt-2 text-sm font-medium text-emerald-700">Leve mais {{ $next_discount['missing_photos'] }} {{ $next_discount['missing_photos'] === 1 ? 'foto' : 'fotos' }} e ganhe {{ number_format($next_discount['percent'] * 100, 0) }}% de desconto.</p>
+                    @endif
                 </div>
-
-                @if (session('status'))
-                    <p class="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</p>
-                @endif
 
                 <div class="mt-6 space-y-3">
                     @if ($is_in_cart)
-                        <button wire:click="remove_from_cart" class="w-full rounded-2xl border border-red-200 px-5 py-4 text-sm font-bold text-red-600">Remover do carrinho</button>
+                        <button wire:click="remove_from_cart" class="fotx-button-secondary w-full py-3.5 text-red-600 hover:text-red-700">Remover do carrinho</button>
                     @else
-                        <button wire:click="add_to_cart" class="w-full rounded-2xl bg-slate-950 px-5 py-4 text-sm font-bold text-white">Adicionar ao carrinho</button>
+                        <button wire:click="add_to_cart" class="fotx-button-primary w-full py-3.5">Adicionar ao carrinho</button>
                     @endif
 
-                    <a href="{{ route('checkout.show') }}" class="block w-full rounded-2xl bg-emerald-600 px-5 py-4 text-center text-sm font-bold text-white">Finalizar compra{{ $cart_count > 0 ? ' ('.$cart_count.')' : '' }}</a>
+                    @if ($cart_count > 0)
+                        <a href="{{ route('checkout.show') }}" class="block w-full rounded-full bg-emerald-500 px-5 py-3.5 text-center text-sm font-bold text-slate-950 transition hover:bg-emerald-400">Finalizar compra ({{ $cart_count }})</a>
+                    @endif
+
                     @if (filled(config('fotx.whatsapp_number')))
-                        <a
-                            href="{{ route('tracking.events.whatsapp', [$event->slug, 'photo' => $event_photo->public_id]) }}"
-                            target="_blank"
-                            rel="noopener"
-                            class="block w-full rounded-2xl border border-emerald-200 px-5 py-4 text-center text-sm font-bold text-emerald-700"
-                        >
+                        <a href="{{ route('tracking.events.whatsapp', [$event->slug, 'photo' => $event_photo->public_id]) }}" target="_blank" rel="noopener" class="block w-full text-center text-sm font-semibold text-slate-600 hover:text-slate-950">
                             Compartilhar no WhatsApp
                         </a>
                     @endif
-                    <a href="{{ route('public.events.show', $event->slug) }}" class="block w-full rounded-2xl border border-slate-300 px-5 py-4 text-center text-sm font-semibold text-slate-700">Voltar ao evento</a>
                 </div>
+
+                @if (session('status'))
+                    <p class="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</p>
+                @endif
             </aside>
         </div>
-    </div>
-</main>
+    </main>
+</div>

@@ -44,6 +44,11 @@ class PhotoDetail extends Component
         return view('livewire.public.photo-detail', [
             'is_in_cart' => $cart_service->has_photo($this->event_photo->id),
             'cart_count' => $cart_service->count(),
-        ])->layout('layouts.public');
+            'next_discount' => $cart_service->next_discount(),
+        ])->layout('layouts.public', [
+            'title' => "Foto do evento {$this->event->name}",
+            'description' => "Foto do evento {$this->event->name} em alta resolução.",
+            'og_image' => route('media.photos.watermarked', $this->event_photo),
+        ]);
     }
 }

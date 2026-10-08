@@ -473,7 +473,8 @@ class FotxMvpTest extends TestCase
             ->call('search_by_text')
             ->assertSet('has_searched', true)
             ->assertSet('result_source', 'text')
-            ->assertSee('100% compatível');
+            ->assertSee('Nº 3087')
+            ->assertDontSee('compatível');
 
         $this->assertDatabaseHas('event_analytics', [
             'event_id' => $event->id,
@@ -494,6 +495,86 @@ class FotxMvpTest extends TestCase
         $this->assertSame(0.15, $summary['discount_percent']);
         $this->assertSame(11.25, $summary['discount_amount']);
         $this->assertSame(63.75, $summary['total']);
+    }
+
+    public function test_cart_points_to_next_volume_discount(): void
+    {
+        $event = Event::factory()->create(['price_per_photo' => 25.00]);
+        $cart_service = app(CartService::class);
+        $photos = EventPhoto::factory()->count(8)->create(['event_id' => $event->id]);
+
+        $photos->take(2)->each(fn (EventPhoto $event_photo) => $cart_service->add_photo($event_photo->load('event')));
+        $this->assertSame(['missing_photos' => 1, 'percent' => 0.15], $cart_service->next_discount());
+
+        $photos->slice(2)->each(fn (EventPhoto $event_photo) => $cart_service->add_photo($event_photo->load('event')));
+        $this->assertNull($cart_service->next_discount());
+    }
+
+    public function test_cart_route_redirects_to_checkout(): void
+    {
+        $this->get(route('cart.show'))->assertRedirect('/checkout');
+    }
+
+    public function test_checkout_removes_photo_from_cart(): void
+    {
+        $event = Event::factory()->create(['price_per_photo' => 25.00]);
+        $event_photo = EventPhoto::factory()->create(['event_id' => $event->id]);
+        app(CartService::class)->add_photo($event_photo->load('event'));
+
+        Livewire::test(Checkout::class)
+            ->assertSee('Suas fotos')
+            ->call('remove_photo', $event_photo->public_id)
+            ->assertDispatched('cart-updated')
+            ->assertSee('Seu carrinho está vazio');
+
+        $this->assertSame(0, app(CartService::class)->count());
+    }
+
+    public function test_public_gallery_is_shown_only_when_enabled(): void
+    {
+        $event = Event::factory()->create(['status' => 'published', 'public_gallery' => false]);
+        EventPhoto::factory()->count(2)->create(['event_id' => $event->id, 'status' => 'ready']);
+
+        Livewire::test(SelfieSearch::class, ['event' => $event])->assertDontSee('Todas as fotos');
+
+        $event->update(['public_gallery' => true]);
+
+        Livewire::test(SelfieSearch::class, ['event' => $event->refresh()])
+            ->assertSee('Todas as fotos')
+            ->assertSee('2 fotos neste evento');
+    }
+
+    public function test_photographer_can_enable_public_gallery(): void
+    {
+        $photographer = User::factory()->create(['role' => 'photographer']);
+
+        Livewire::actingAs($photographer)
+            ->test(EventForm::class)
+            ->set('name', 'Corrida Aberta')
+            ->set('slug', 'corrida-aberta')
+            ->set('price_per_photo', '19.90')
+            ->set('public_gallery', true)
+            ->call('save');
+
+        $this->assertDatabaseHas('events', ['slug' => 'corrida-aberta', 'public_gallery' => true]);
+    }
+
+    public function test_pending_page_links_downloads_when_order_is_paid(): void
+    {
+        $event = Event::factory()->create();
+        $order = Order::query()->create([
+            'event_id' => $event->id,
+            'buyer_email' => 'cliente@fotx.test',
+            'total_amount' => 20,
+            'status' => 'paid',
+            'payment_provider' => 'mock',
+        ]);
+
+        $this->get(route('orders.pending', [$order, $order->download_token]))
+            ->assertOk()
+            ->assertSee('Suas fotos estão liberadas')
+            ->assertSee(route('orders.downloads', [$order, $order->download_token]))
+            ->assertSee('Guarde este link');
     }
 
     public function test_checkout_creates_order_with_discounted_total(): void

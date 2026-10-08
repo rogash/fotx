@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status', 'cover_photo_id'])]
+#[Fillable(['user_id', 'name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status', 'public_gallery', 'cover_photo_id'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -30,6 +30,7 @@ class Event extends Model
     {
         return [
             'event_date' => 'date',
+            'public_gallery' => 'boolean',
             'price_per_photo' => 'decimal:2',
         ];
     }
