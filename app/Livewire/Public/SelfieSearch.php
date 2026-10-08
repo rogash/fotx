@@ -14,11 +14,12 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use RuntimeException;
 
 class SelfieSearch extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public Event $event;
 
@@ -35,6 +36,8 @@ class SelfieSearch extends Component
     public bool $has_searched = false;
 
     public string $result_source = '';
+
+    public string $search_mode = 'selfie';
 
     public function search(FaceRecognitionService $face_recognition_service): void
     {
@@ -170,14 +173,18 @@ class SelfieSearch extends Component
             ->firstOrFail();
         $cart_service->add_photo($event_photo);
         $this->dispatch('cart-updated');
-        session()->flash('status', 'Foto adicionada ao carrinho.');
     }
 
     public function remove_from_cart(string $event_photo_public_id, CartService $cart_service): void
     {
         $cart_service->remove_public_photo($event_photo_public_id);
         $this->dispatch('cart-updated');
-        session()->flash('status', 'Foto removida do carrinho.');
+    }
+
+    public function set_search_mode(string $search_mode): void
+    {
+        $this->search_mode = $search_mode === 'text' ? 'text' : 'selfie';
+        $this->resetErrorBag();
     }
 
     public function render(CartService $cart_service)
@@ -185,6 +192,12 @@ class SelfieSearch extends Component
         return view('livewire.public.selfie-search', [
             'cart_photo_ids' => $cart_service->get_items()->pluck('event_photo_id')->all(),
             'cart_count' => $cart_service->count(),
+            'cart_total' => $cart_service->total(),
+            'discount_percent' => $cart_service->discount_percent(),
+            'next_discount' => $cart_service->next_discount(),
+            'gallery_photos' => $this->event->public_gallery
+                ? $this->event->ready_photos()->latest('id')->paginate(24, pageName: 'pagina')
+                : null,
         ]);
     }
 }

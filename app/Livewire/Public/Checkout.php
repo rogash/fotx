@@ -68,12 +68,22 @@ class Checkout extends Component
         $this->redirectRoute('orders.pending', [$order, $order->download_token], navigate: true);
     }
 
+    public function remove_photo(string $event_photo_public_id, CartService $cart_service): void
+    {
+        $cart_service->remove_public_photo($event_photo_public_id);
+        $this->dispatch('cart-updated');
+    }
+
     public function render(CartService $cart_service)
     {
+        $items = $cart_service->get_items();
+
         return view('livewire.public.checkout', [
-            'items' => $cart_service->get_items(),
+            'items' => $items,
             'summary' => $cart_service->summary(),
             'total' => $cart_service->total(),
-        ])->layout('layouts.public');
+            'next_discount' => $cart_service->next_discount(),
+            'event' => $items->first()['photo']->event ?? null,
+        ])->layout('layouts.public', ['title' => 'Finalizar compra']);
     }
 }

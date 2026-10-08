@@ -44,7 +44,22 @@ class EventPage extends Component
 
     public function render()
     {
-        return view($this->is_available ? 'livewire.public.event-page' : 'livewire.public.event-unavailable')
-            ->layout('layouts.public');
+        if (! $this->is_available) {
+            return view('livewire.public.event-unavailable')
+                ->layout('layouts.public', ['title' => $this->event->name]);
+        }
+
+        $photos_count = $this->event->ready_photos()->count();
+
+        return view('livewire.public.event-page', [
+            'photos_count' => $photos_count,
+            'discount_tiers' => config('fotx.cart_volume_discounts', []),
+        ])->layout('layouts.public', [
+            'title' => $this->event->name,
+            'description' => "Encontre suas fotos do evento {$this->event->name} por selfie ou número e baixe em alta resolução.",
+            'og_image' => $this->event->cover_photo?->watermarked_path
+                ? route('media.photos.watermarked', $this->event->cover_photo)
+                : null,
+        ]);
     }
 }
