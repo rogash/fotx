@@ -12,23 +12,29 @@ new #[Layout('layouts.guest')] class extends Component
 {
     public string $name = '';
     public string $email = '';
+    public string $portfolio = '';
     public string $password = '';
     public string $password_confirmation = '';
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function register(): void
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'portfolio' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        // A conta nasce como cliente; o acesso de fotógrafo depende de aprovação.
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'customer',
+        ]);
+        $user->request_photographer_access(filled($validated['portfolio']) ? $validated['portfolio'] : null);
 
-        event(new Registered($user = User::create($validated)));
+        event(new Registered($user));
 
         Auth::login($user);
 
@@ -37,8 +43,9 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <h1 class="text-2xl font-bold text-slate-950">Criar conta de cliente</h1>
-    <p class="mt-1 text-sm text-slate-500">Para acompanhar suas compras de fotos em um só lugar.</p>
+    <p class="text-sm font-semibold text-emerald-700">Para fotógrafos e equipes</p>
+    <h1 class="mt-1 text-2xl font-bold text-slate-950">Venda suas fotos com o Fotx</h1>
+    <p class="mt-1 text-sm text-slate-500">Crie sua conta. Nossa equipe confere o cadastro e libera o acesso para você criar eventos.</p>
 
     <form wire:submit="register" class="mt-6 space-y-4">
         <div>
@@ -54,6 +61,12 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
 
         <div>
+            <x-input-label for="portfolio">Portfólio ou Instagram <span class="font-normal text-slate-400">(opcional)</span></x-input-label>
+            <x-text-input wire:model="portfolio" id="portfolio" class="mt-2 block w-full" type="text" name="portfolio" placeholder="@seuperfil ou link do site" />
+            <x-input-error :messages="$errors->get('portfolio')" class="mt-2" />
+        </div>
+
+        <div>
             <x-input-label for="password" :value="__('Password')" />
             <x-text-input wire:model="password" id="password" class="mt-2 block w-full" type="password" name="password" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
@@ -65,11 +78,10 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <x-primary-button class="w-full py-3">Criar conta</x-primary-button>
+        <x-primary-button class="w-full py-3">Criar conta de fotógrafo</x-primary-button>
     </form>
 
-    <div class="mt-6 space-y-2 border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
-        <p>{{ __('Already registered?') }} <a href="{{ route('login') }}" class="font-semibold text-slate-950 hover:underline" wire:navigate>Entrar</a></p>
-        <p>É fotógrafo? <a href="{{ route('register.photographer') }}" class="font-semibold text-slate-950 hover:underline" wire:navigate>Cadastre-se para vender fotos</a></p>
-    </div>
+    <p class="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
+        {{ __('Already registered?') }} <a href="{{ route('login') }}" class="font-semibold text-slate-950 hover:underline" wire:navigate>Entrar</a>
+    </p>
 </div>

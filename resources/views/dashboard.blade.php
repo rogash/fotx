@@ -19,7 +19,18 @@
 
     <div class="py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            @if (session('status'))
+                <p class="mb-6 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-100">{{ session('status') }}</p>
+            @endif
+
             @if ($role === 'customer')
+                @if (auth()->user()->has_pending_photographer_request())
+                    <section class="fotx-card mb-8 p-6">
+                        <p class="text-sm font-semibold text-amber-700">Cadastro de fotógrafo em análise</p>
+                        <p class="mt-1 text-sm text-slate-600">Recebemos seu pedido em {{ auth()->user()->photographer_requested_at->format('d/m/Y') }}. Assim que for aprovado, a área de eventos aparece aqui no painel.</p>
+                    </section>
+                @endif
+
                 <div class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
                     <section class="overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm">
                         <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">Área do cliente</p>
@@ -43,6 +54,20 @@
                         </div>
                     </section>
                 </div>
+
+                @unless (auth()->user()->has_pending_photographer_request())
+                    <section class="fotx-card mt-8 flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-950">Vende fotos de eventos?</h2>
+                            <p class="mt-1 text-sm text-slate-500">Peça acesso de fotógrafo para criar eventos e vender pelo Fotx.</p>
+                        </div>
+                        <form method="POST" action="{{ route('photographer.request') }}" class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+                            @csrf
+                            <input type="text" name="portfolio" maxlength="255" placeholder="Portfólio ou Instagram (opcional)" class="fotx-input w-full px-4 py-2.5 text-sm sm:w-64" />
+                            <button class="fotx-button-primary shrink-0">Pedir acesso</button>
+                        </form>
+                    </section>
+                @endunless
 
                 <section class="fotx-card mt-8 p-6">
                     <h2 class="text-lg font-semibold text-slate-950">Últimas compras</h2>

@@ -28,6 +28,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'photographer_requested_at' => 'datetime',
         ];
     }
 
@@ -59,5 +60,33 @@ class User extends Authenticatable
     public function is_photographer(): bool
     {
         return in_array($this->role, ['admin', 'photographer'], true);
+    }
+
+    // O pedido fica pendente com o usuário ainda como cliente, então nenhuma
+    // permissão de fotógrafo é concedida antes da aprovação de um admin.
+    public function has_pending_photographer_request(): bool
+    {
+        return $this->role === 'customer' && $this->photographer_requested_at !== null;
+    }
+
+    public function request_photographer_access(?string $portfolio = null): void
+    {
+        $this->forceFill([
+            'photographer_requested_at' => now(),
+            'photographer_portfolio' => $portfolio,
+        ])->save();
+    }
+
+    public function approve_photographer(): void
+    {
+        $this->forceFill([
+            'role' => 'photographer',
+            'photographer_requested_at' => null,
+        ])->save();
+    }
+
+    public function reject_photographer(): void
+    {
+        $this->forceFill(['photographer_requested_at' => null])->save();
     }
 }

@@ -37,6 +37,15 @@ new class extends Component
                         <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')" wire:navigate>
                             Eventos
                         </x-nav-link>
+                        @if (auth()->user()->is_admin())
+                            @php $pending_photographers = \App\Models\User::query()->where('role', 'customer')->whereNotNull('photographer_requested_at')->count(); @endphp
+                            <x-nav-link :href="route('admin.photographers')" :active="request()->routeIs('admin.photographers')" wire:navigate>
+                                Fotógrafos
+                                @if ($pending_photographers > 0)
+                                    <span class="ms-1.5 rounded-full bg-amber-400 px-1.5 text-xs font-bold text-slate-950">{{ $pending_photographers }}</span>
+                                @endif
+                            </x-nav-link>
+                        @endif
                     @else
                         <x-nav-link :href="route('cart.show')" :active="request()->routeIs('cart.*')" wire:navigate>
                             Carrinho
@@ -100,6 +109,11 @@ new class extends Component
                 <x-responsive-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')" wire:navigate>
                     Eventos
                 </x-responsive-nav-link>
+                @if (auth()->user()->is_admin())
+                    <x-responsive-nav-link :href="route('admin.photographers')" :active="request()->routeIs('admin.photographers')" wire:navigate>
+                        Fotógrafos
+                    </x-responsive-nav-link>
+                @endif
             @else
                 <x-responsive-nav-link :href="route('cart.show')" :active="request()->routeIs('cart.*')" wire:navigate>
                     Carrinho

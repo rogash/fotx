@@ -8,6 +8,9 @@ Route::middleware('guest')->group(function () {
     Volt::route('register', 'pages.auth.register')
         ->name('register');
 
+    Volt::route('cadastro/fotografo', 'pages.auth.register-photographer')
+        ->name('register.photographer');
+
     Volt::route('login', 'pages.auth.login')
         ->name('login');
 
