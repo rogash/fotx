@@ -3,6 +3,7 @@
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Photographer\EventController;
+use App\Http\Controllers\PhotographerAccessController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\MediaController;
 use App\Http\Controllers\Public\OrderController;
@@ -35,7 +36,12 @@ Route::middleware(['auth', 'verified', 'role:admin,photographer'])->group(functi
     Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 });
 
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function (): void {
+    Route::view('admin/fotografos', 'admin.photographers')->name('admin.photographers');
+});
+
 Route::middleware(['auth', 'verified', 'role:customer'])->group(function (): void {
+    Route::post('/fotografo/solicitar', PhotographerAccessController::class)->name('photographer.request');
     Route::get('/my/photos', [CustomerOrderController::class, 'index'])->name('customer.orders.index');
 });
 
