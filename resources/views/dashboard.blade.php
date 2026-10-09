@@ -86,18 +86,99 @@
                     </div>
                 </section>
             @else
+                @php
+                    $latest_event = $recent_events->first();
+                    $onboarding_steps = [
+                        $total_events > 0,
+                        $total_photos > 0,
+                        $published_event !== null,
+                        $total_sales > 0,
+                    ];
+                    $completed_steps = count(array_filter($onboarding_steps));
+                @endphp
+
+                @if ($role === 'photographer' && $completed_steps < count($onboarding_steps))
+                    <section class="fotx-card mb-8 p-6">
+                        <div class="flex flex-wrap items-end justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-emerald-700">Primeiros passos</p>
+                                <h2 class="mt-1 text-xl font-semibold text-slate-950">Coloque seu evento à venda</h2>
+                            </div>
+                            <p class="text-sm font-medium text-slate-500">{{ $completed_steps }} de {{ count($onboarding_steps) }} concluídos</p>
+                        </div>
+                        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <x-photographer.step number="1" title="Crie um evento" :done="$onboarding_steps[0]" :href="route('events.create')" action="Criar evento">
+                                Nome, data, local e preço por foto. Você pode ajustar tudo depois.
+                            </x-photographer.step>
+                            <x-photographer.step number="2" title="Envie as fotos" :done="$onboarding_steps[1]" :href="$latest_event ? route('events.photos', $latest_event) : null" action="Enviar fotos">
+                                O Fotx gera as miniaturas, aplica a marca d'água e prepara a busca por selfie.
+                            </x-photographer.step>
+                            <x-photographer.step number="3" title="Publique o evento" :done="$onboarding_steps[2]" :href="$latest_event ? route('events.show', $latest_event) : null" action="Abrir evento">
+                                Com o evento publicado, o link e o QR Code passam a funcionar para os clientes.
+                            </x-photographer.step>
+                            <x-photographer.step number="4" title="Divulgue e venda" :done="$onboarding_steps[3]" :href="$published_event ? route('events.poster', $published_event) : null" action="Imprimir cartaz" new_tab>
+                                Compartilhe o link e o cartaz com QR Code para os participantes acharem as fotos.
+                            </x-photographer.step>
+                        </div>
+                    </section>
+                @endif
+
                 <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
-                        ['label' => 'Total de eventos', 'value' => $total_events],
-                        ['label' => 'Fotos cadastradas', 'value' => $total_photos],
+                        ['label' => 'Eventos', 'value' => $total_events],
+                        ['label' => 'Fotos enviadas', 'value' => $total_photos],
                         ['label' => 'Vendas', 'value' => $total_sales],
                         ['label' => 'Faturamento', 'value' => 'R$ '.number_format((float) $total_revenue, 2, ',', '.')],
                     ] as $card)
-                        <div class="fotx-card p-6 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5">
+                        <div class="fotx-card p-6">
                             <p class="text-sm font-medium text-slate-500">{{ $card['label'] }}</p>
-                            <p class="mt-3 text-4xl font-semibold text-slate-950">{{ $card['value'] }}</p>
+                            <p class="mt-3 text-3xl font-semibold text-slate-950">{{ $card['value'] }}</p>
                         </div>
                     @endforeach
+                </div>
+
+                <div class="mt-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                    <section class="fotx-card p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <h2 class="text-lg font-semibold text-slate-950">Eventos recentes</h2>
+                            @if ($total_events > 0)
+                                <a href="{{ route('events.index') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-950">Ver todos</a>
+                            @endif
+                        </div>
+                        <div class="mt-4 divide-y divide-slate-100">
+                            @forelse ($recent_events as $event)
+                                <a href="{{ route('events.show', $event) }}" class="flex items-center justify-between gap-4 py-4 hover:opacity-80">
+                                    <div class="min-w-0">
+                                        <p class="truncate font-semibold text-slate-900">{{ $event->name }}</p>
+                                        <p class="text-sm text-slate-500">{{ $event->event_date?->format('d/m/Y') ?? 'Sem data' }} · {{ $event->photos_count }} {{ $event->photos_count === 1 ? 'foto' : 'fotos' }}</p>
+                                    </div>
+                                    <x-status-badge type="event" :status="$event->status" />
+                                </a>
+                            @empty
+                                <div class="py-6">
+                                    <p class="text-sm text-slate-500">Você ainda não tem eventos.</p>
+                                    <a href="{{ route('events.create') }}" class="fotx-button-primary mt-4">Criar primeiro evento</a>
+                                </div>
+                            @endforelse
+                        </div>
+                    </section>
+
+                    <section class="fotx-card p-6">
+                        <h2 class="text-lg font-semibold text-slate-950">Últimas vendas</h2>
+                        <div class="mt-4 divide-y divide-slate-100">
+                            @forelse ($recent_sales as $order)
+                                <div class="flex items-center justify-between gap-4 py-4">
+                                    <div class="min-w-0">
+                                        <p class="truncate font-semibold text-slate-900">{{ $order->event->name }}</p>
+                                        <p class="text-sm text-slate-500">{{ ($order->paid_at ?? $order->created_at)->format('d/m/Y H:i') }}</p>
+                                    </div>
+                                    <p class="shrink-0 font-semibold text-slate-950">R$ {{ number_format((float) $order->total_amount, 2, ',', '.') }}</p>
+                                </div>
+                            @empty
+                                <p class="py-6 text-sm text-slate-500">Nenhuma venda ainda. As vendas aparecem aqui assim que o pagamento é aprovado.</p>
+                            @endforelse
+                        </div>
+                    </section>
                 </div>
             @endif
         </div>

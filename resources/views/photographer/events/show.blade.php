@@ -4,7 +4,7 @@
             <div>
                 <div class="flex flex-wrap items-center gap-3">
                     <h1 class="text-2xl font-semibold text-slate-900">{{ $event->name }}</h1>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ $event->status }}</span>
+                    <x-status-badge type="event" :status="$event->status" />
                 </div>
                 <p class="mt-1 text-sm text-slate-500">{{ $event->location ?: 'Local não informado' }}</p>
             </div>
@@ -60,25 +60,15 @@
             </section>
 
             <section class="grid gap-4 lg:grid-cols-3">
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                    <p class="text-sm font-semibold text-slate-950">1. Envie fotos</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">Suba as imagens do evento. O Fotx gera miniatura e versão com marca d'água.</p>
-                    @can('editPhotos', $event)
-                        <a href="{{ route('events.photos', $event) }}" class="mt-4 inline-flex text-sm font-bold text-emerald-700">Gerenciar fotos</a>
-                    @endcan
-                </div>
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                    <p class="text-sm font-semibold text-slate-950">2. Complete a busca</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">Importe CSV com número, nome ou equipe para melhorar a busca pública.</p>
-                    @can('editPhotos', $event)
-                        <a href="{{ route('events.photos', $event) }}" class="mt-4 inline-flex text-sm font-bold text-emerald-700">Importar CSV</a>
-                    @endcan
-                </div>
-                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                    <p class="text-sm font-semibold text-slate-950">3. Publique e divulgue</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">Publique o evento e compartilhe o QR Code quando a galeria estiver pronta.</p>
-                    <a href="{{ route('events.poster', $event) }}" target="_blank" class="mt-4 inline-flex text-sm font-bold text-emerald-700">Abrir cartaz</a>
-                </div>
+                <x-photographer.step number="1" title="Envie as fotos" :done="$event->ready_photos_count > 0" :href="auth()->user()->can('editPhotos', $event) ? route('events.photos', $event) : null" action="Gerenciar fotos">
+                    Suba as imagens do evento. O Fotx gera a miniatura e a versão com marca d'água.
+                </x-photographer.step>
+                <x-photographer.step number="2" title="Complete a busca" optional :done="$has_photo_metadata" :href="auth()->user()->can('editPhotos', $event) ? route('events.photos', $event) : null" action="Importar CSV">
+                    Importe um CSV com número, nome ou equipe para melhorar a busca pública.
+                </x-photographer.step>
+                <x-photographer.step number="3" title="Publique e divulgue" :done="$event->status === 'published'" :href="route('events.poster', $event)" action="Abrir cartaz" new_tab>
+                    Publique o evento e compartilhe o QR Code quando a galeria estiver pronta.
+                </x-photographer.step>
             </section>
 
             <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
@@ -122,9 +112,12 @@
                     <div class="mt-5 divide-y divide-slate-100">
                         @foreach ($event->members as $member)
                             <div class="flex items-center justify-between gap-4 py-4">
-                                <div>
-                                    <p class="font-semibold text-slate-900">{{ $member->user->name }}</p>
-                                    <p class="text-sm text-slate-500">{{ $member->user->email }} - {{ $member->role }}</p>
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <p class="font-semibold text-slate-900">{{ $member->user->name }}</p>
+                                        <x-status-badge type="member" :status="$member->role" />
+                                    </div>
+                                    <p class="truncate text-sm text-slate-500">{{ $member->user->email }}</p>
                                 </div>
                                 @can('manageMembers', $event)
                                     @if ($member->role !== 'owner')
@@ -158,7 +151,7 @@
                                         <p class="font-semibold text-slate-900">{{ $batch->uploader?->name ?? 'Equipe Fotx' }}</p>
                                         <p class="text-sm text-slate-500">{{ $batch->created_at->format('d/m/Y H:i') }}</p>
                                     </div>
-                                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ $batch->status }}</span>
+                                    <x-status-badge type="batch" :status="$batch->status" />
                                 </div>
                                 <p class="mt-2 text-sm text-slate-500">{{ $batch->processed_files }} prontas, {{ $batch->failed_files }} falhas, {{ $batch->total_files }} no total</p>
                             </div>
@@ -172,7 +165,7 @@
             <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <p class="text-sm font-semibold text-slate-500">Metricas do evento</p>
+                        <p class="text-sm font-semibold text-slate-500">Métricas do evento</p>
                         <h2 class="mt-2 text-xl font-semibold text-slate-950">Funil público</h2>
                         <p class="mt-2 max-w-2xl text-sm text-slate-500">
                             Acompanhe acessos, leituras de QR Code, buscas e interações que ajudam a vender as fotos.
@@ -247,7 +240,7 @@
                                 </div>
                                 <div class="text-right">
                                     <p class="font-semibold text-slate-900">R$ {{ number_format((float) $order->total_amount, 2, ',', '.') }}</p>
-                                    <p class="text-sm text-slate-500">{{ $order->status }}</p>
+                                    <x-status-badge type="order" :status="$order->status" class="mt-1" />
                                 </div>
                             </div>
                         @empty

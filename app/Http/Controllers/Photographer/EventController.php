@@ -54,6 +54,9 @@ class EventController extends Controller
             'recent_orders' => $recent_orders,
             'recent_batches' => $recent_batches,
             'analytics_counts' => $analytics_counts,
+            'has_photo_metadata' => $event->photos()
+                ->where(fn ($query) => $query->whereNotNull('participant_code')->orWhereNotNull('search_keywords'))
+                ->exists(),
         ]);
     }
 

@@ -57,7 +57,7 @@ class FotxMvpTest extends TestCase
             ->assertSee('Minhas fotos')
             ->assertSee('Área do cliente')
             ->assertDontSee('Novo evento')
-            ->assertDontSee('Fotos cadastradas');
+            ->assertDontSee('Fotos enviadas');
     }
 
     public function test_customer_cannot_access_photographer_events_area(): void
@@ -756,7 +756,7 @@ class FotxMvpTest extends TestCase
             ->assertSee('Copiar link público')
             ->assertSee('Baixar QR Code')
             ->assertSee('Abrir cartaz')
-            ->assertSee('Metricas do evento')
+            ->assertSee('Métricas do evento')
             ->assertSee($event->public_url());
     }
 
