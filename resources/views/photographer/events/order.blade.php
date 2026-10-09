@@ -20,7 +20,7 @@
                             <p class="font-semibold text-slate-900">{{ $order->buyer_name ?: 'Sem nome' }}</p>
                         </div>
                         <div>
-                            <p class="text-slate-500">Email</p>
+                            <p class="text-slate-500">E-mail</p>
                             <p class="font-semibold text-slate-900">{{ $order->buyer_email }}</p>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                     <dl class="mt-5 grid gap-4 text-sm">
                         <div class="flex justify-between gap-4">
                             <dt class="text-slate-500">Status</dt>
-                            <dd class="font-semibold text-slate-900">{{ $order->status }}</dd>
+                            <dd><x-status-badge type="order" :status="$order->status" /></dd>
                         </div>
                         <div class="flex justify-between gap-4">
                             <dt class="text-slate-500">Total</dt>
@@ -42,7 +42,7 @@
                             <dd class="font-semibold text-slate-900">{{ $order->payment_provider ?: 'N/A' }}</dd>
                         </div>
                         <div class="flex justify-between gap-4">
-                            <dt class="text-slate-500">Referencia</dt>
+                            <dt class="text-slate-500">Referência</dt>
                             <dd class="font-semibold text-slate-900">{{ $order->payment_reference ?: 'N/A' }}</dd>
                         </div>
                     </dl>

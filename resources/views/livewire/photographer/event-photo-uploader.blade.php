@@ -69,7 +69,7 @@
                                 <p class="text-sm font-semibold text-slate-900">{{ $batch->uploader?->name ?? 'Equipe Fotx' }}</p>
                                 <p class="mt-1 text-xs text-slate-500">{{ $batch->created_at->format('d/m/Y H:i') }}</p>
                             </div>
-                            <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{{ $batch->status }}</span>
+                            <x-status-badge type="batch" :status="$batch->status" />
                         </div>
                         <div class="mt-4 h-2 overflow-hidden rounded-full bg-white">
                             <div class="h-full rounded-full bg-emerald-500" style="width: {{ $progress }}%"></div>
@@ -123,7 +123,7 @@
                             <p class="truncate text-sm font-medium text-slate-800">{{ $event_photo->filename }}</p>
                             <p class="truncate text-xs text-slate-500">{{ $event_photo->uploader?->name ? 'Enviada por '.$event_photo->uploader->name : 'Sem uploader' }}</p>
                         </div>
-                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ $event_photo->status }}</span>
+                        <x-status-badge type="photo" :status="$event_photo->status" />
                     </div>
                     <div class="space-y-2 rounded-xl bg-slate-50 p-3">
                         <div>

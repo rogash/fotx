@@ -39,7 +39,7 @@
                             <h2 class="text-lg font-semibold text-slate-950">{{ $event->name }}</h2>
                             <p class="mt-1 text-sm text-slate-500">{{ $event->location ?: 'Local não informado' }}</p>
                         </div>
-                        <span class="fotx-chip">{{ $event->status }}</span>
+                        <x-status-badge type="event" :status="$event->status" />
                     </div>
                     <div class="mt-6 flex items-center justify-between text-sm text-slate-600">
                         <span>{{ $event->photos_count }} fotos</span>

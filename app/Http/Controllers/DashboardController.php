@@ -37,12 +37,17 @@ class DashboardController extends Controller
         $event_ids = (clone $events_query)->pluck('id');
         $paid_orders = Order::query()->whereIn('event_id', $event_ids)->where('status', 'paid');
 
+        $recent_events = (clone $events_query)->withCount('photos')->latest()->limit(5)->get();
+
         return view('dashboard', [
             'role' => $user->role,
-            'total_events' => (clone $events_query)->count(),
+            'total_events' => $event_ids->count(),
             'total_photos' => EventPhoto::query()->whereIn('event_id', $event_ids)->count(),
             'total_sales' => (clone $paid_orders)->count(),
             'total_revenue' => (clone $paid_orders)->sum('total_amount'),
+            'recent_events' => $recent_events,
+            'published_event' => (clone $events_query)->where('status', 'published')->latest()->first(),
+            'recent_sales' => (clone $paid_orders)->with('event')->latest('paid_at')->limit(5)->get(),
         ]);
     }
 }

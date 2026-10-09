@@ -50,7 +50,7 @@
                                     <td class="px-6 py-4 text-sm text-slate-600">{{ $order->items->count() }}</td>
                                     <td class="px-6 py-4 text-sm font-semibold text-slate-900">R$ {{ number_format((float) $order->total_amount, 2, ',', '.') }}</td>
                                     <td class="px-6 py-4 text-sm">
-                                        <span class="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">{{ $order->status }}</span>
+                                        <x-status-badge type="order" :status="$order->status" />
                                     </td>
                                 </tr>
                             @empty
