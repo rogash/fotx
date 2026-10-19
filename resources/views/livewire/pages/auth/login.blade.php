@@ -48,10 +48,12 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
         </div>
 
-        <label for="remember" class="inline-flex items-center gap-2 text-sm text-slate-600">
-            <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-600" name="remember">
-            {{ __('Remember me') }}
-        </label>
+        <div>
+            <label for="remember" class="inline-flex items-center gap-2 text-sm text-slate-600">
+                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-600" name="remember">
+                {{ __('Remember me') }}
+            </label>
+        </div>
 
         <x-primary-button class="w-full py-3">{{ __('Log in') }}</x-primary-button>
     </form>

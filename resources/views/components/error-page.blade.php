@@ -17,7 +17,7 @@
     <body class="min-h-screen bg-[#f5f5f7] font-sans text-slate-900 antialiased">
         <main class="flex min-h-screen flex-col items-center justify-center px-4 py-10 text-center">
             <a href="https://fotx.com.br" class="inline-flex">
-                <x-brand.logo class="h-10 w-auto" />
+                <x-brand.logo />
             </a>
 
             <p class="mt-12 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Erro {{ $code }}</p>

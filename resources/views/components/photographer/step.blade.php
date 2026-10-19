@@ -3,7 +3,7 @@
 <div @class([
     'rounded-2xl p-5 ring-1',
     'bg-emerald-50/60 ring-emerald-100' => $done,
-    'bg-white shadow-sm ring-slate-200' => ! $done,
+    'bg-white shadow-xs ring-slate-200' => ! $done,
 ])>
     <div class="flex items-center gap-3">
         @if ($done)

@@ -24,7 +24,7 @@ new class extends Component
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" wire:navigate class="inline-flex items-center">
-                        <x-brand.logo class="h-10 w-auto" />
+                        <x-brand.logo />
                     </a>
                 </div>
 
@@ -61,7 +61,7 @@ new class extends Component
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center rounded-full border border-slate-200 bg-white/70 px-3 py-2 text-sm font-semibold leading-4 text-slate-600 shadow-sm transition hover:bg-white hover:text-slate-950 focus:outline-none">
+                        <button class="inline-flex items-center rounded-full border border-slate-200 bg-white/70 px-3 py-2 text-sm font-semibold leading-4 text-slate-600 shadow-xs transition hover:bg-white hover:text-slate-950 focus:outline-hidden">
                             <div x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
 
                             <div class="ms-1">
@@ -89,7 +89,7 @@ new class extends Component
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center rounded-full p-2 text-slate-500 transition hover:bg-white hover:text-slate-900 focus:outline-none">
+                <button @click="open = ! open" class="inline-flex items-center justify-center rounded-full p-2 text-slate-500 transition hover:bg-white hover:text-slate-900 focus:outline-hidden">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

@@ -12,7 +12,7 @@
     <div class="py-10">
         <div class="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
             <section class="space-y-6">
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <h2 class="text-lg font-semibold text-slate-950">Comprador</h2>
                     <div class="mt-5 space-y-3 text-sm">
                         <div>
@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <h2 class="text-lg font-semibold text-slate-950">Pagamento</h2>
                     <dl class="mt-5 grid gap-4 text-sm">
                         <div class="flex justify-between gap-4">
@@ -48,14 +48,14 @@
                     </dl>
                 </div>
 
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <h2 class="text-lg font-semibold text-slate-950">Link de download</h2>
                     <p class="mt-2 break-all text-sm text-slate-600">{{ route('orders.downloads', [$order, $order->download_token]) }}</p>
                     <a href="{{ route('orders.downloads', [$order, $order->download_token]) }}" class="mt-5 inline-flex rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Abrir downloads</a>
                 </div>
             </section>
 
-            <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <section class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                 <div class="flex items-center justify-between gap-4">
                     <h2 class="text-lg font-semibold text-slate-950">Fotos compradas</h2>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">{{ $order->items->count() }} item(ns)</span>

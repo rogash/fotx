@@ -2,7 +2,7 @@
     <form
         wire:submit="upload_photos"
         x-data="{ upload_error: '' }"
-        class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
+        class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200"
     >
         <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div class="flex-1">
@@ -29,7 +29,7 @@
                 <p class="mt-3 text-sm text-slate-500">Aceita JPG, PNG e WebP até 20MB por foto. Envie até 20 fotos por lote; a versão pública usa marca d'água.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <button class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Enviar fotos</button>
+                <button class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-slate-800">Enviar fotos</button>
                 <button type="button" wire:click="process_pending_photos" class="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700">Processar pendentes</button>
             </div>
         </div>
@@ -37,7 +37,7 @@
         @if (session('status')) <p class="mt-3 text-sm font-medium text-emerald-700">{{ session('status') }}</p> @endif
     </form>
 
-    <form wire:submit="import_metadata_csv" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <form wire:submit="import_metadata_csv" class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div class="flex-1">
                 <label class="text-sm font-semibold text-slate-800">Importar busca por CSV</label>
@@ -45,13 +45,13 @@
                 @error('metadata_csv') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                 <p class="mt-3 text-sm text-slate-500">Use quando tiver número de peito, nome, equipe ou turma. Colunas aceitas: filename/foto/arquivo, número/código/dorsal, nome, equipe, turma, tags.</p>
             </div>
-            <button class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">Importar CSV</button>
+            <button class="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-slate-800">Importar CSV</button>
         </div>
         <p wire:loading wire:target="metadata_csv,import_metadata_csv" class="mt-3 text-sm text-slate-500">Lendo arquivo...</p>
     </form>
 
     @if ($recent_batches->isNotEmpty())
-        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <section class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-950">Lotes recentes</h2>
@@ -85,7 +85,7 @@
         </section>
     @endif
 
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200">
         <div class="flex flex-wrap gap-2">
             @foreach ([
                 '' => 'Todas',
@@ -111,7 +111,7 @@
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @forelse ($event_photos as $event_photo)
-            <div class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+            <div class="rounded-2xl bg-white p-3 shadow-xs ring-1 ring-slate-200">
                 <div class="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
                     @if ($event_photo->thumbnail_path)
                         <img src="{{ route('media.photos.thumbnail', $event_photo) }}" class="h-full w-full object-contain" alt="{{ $event_photo->filename }}">
@@ -130,7 +130,7 @@
                             <label class="text-xs font-semibold text-slate-600">Número / código</label>
                             <input
                                 wire:model="metadata.{{ $event_photo->id }}.participant_code"
-                                class="mt-1 w-full rounded-xl border-slate-200 text-sm shadow-sm focus:border-slate-900 focus:ring-slate-900"
+                                class="mt-1 w-full rounded-xl border-slate-200 text-sm shadow-xs focus:border-slate-900 focus:ring-slate-900"
                                 placeholder="Ex: 3087"
                             />
                         </div>
@@ -138,7 +138,7 @@
                             <label class="text-xs font-semibold text-slate-600">Tags de busca</label>
                             <input
                                 wire:model="metadata.{{ $event_photo->id }}.search_keywords"
-                                class="mt-1 w-full rounded-xl border-slate-200 text-sm shadow-sm focus:border-slate-900 focus:ring-slate-900"
+                                class="mt-1 w-full rounded-xl border-slate-200 text-sm shadow-xs focus:border-slate-900 focus:ring-slate-900"
                                 placeholder="Nome, equipe, turma..."
                             />
                         </div>
@@ -154,7 +154,7 @@
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl bg-white p-6 text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">Nenhuma foto enviada ainda.</div>
+            <div class="rounded-2xl bg-white p-6 text-sm text-slate-500 shadow-xs ring-1 ring-slate-200">Nenhuma foto enviada ainda.</div>
         @endforelse
     </div>
 

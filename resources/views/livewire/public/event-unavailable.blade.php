@@ -1,8 +1,8 @@
 <main class="min-h-screen bg-slate-50">
     <section class="flex min-h-screen items-center justify-center px-4 py-12">
-        <div class="w-full max-w-2xl rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200 sm:p-10">
+        <div class="w-full max-w-2xl rounded-2xl bg-white p-8 text-center shadow-xs ring-1 ring-slate-200 sm:p-10">
             <a href="/" class="inline-flex justify-center">
-                <x-brand.logo class="h-12 w-auto" />
+                <x-brand.logo />
             </a>
 
             <p class="mt-8 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Evento indisponível</p>

@@ -22,7 +22,7 @@
 
     <div class="py-10">
         <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
-            <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <section class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                 <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
                     <div>
                         <p class="text-sm font-semibold text-slate-500">Divulgação do evento</p>
@@ -79,7 +79,7 @@
                     ['label' => 'Vendas pagas', 'value' => $paid_orders_count],
                     ['label' => 'Faturamento', 'value' => 'R$ '.number_format((float) $event_revenue, 2, ',', '.')],
                 ] as $card)
-                    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                    <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                         <p class="text-sm text-slate-500">{{ $card['label'] }}</p>
                         <p class="mt-2 text-3xl font-semibold text-slate-950">{{ $card['value'] }}</p>
                     </div>
@@ -87,7 +87,7 @@
             </section>
 
             <section class="grid gap-6 lg:grid-cols-[1fr_1fr]">
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold text-slate-500">Equipe do evento</p>
@@ -99,8 +99,8 @@
                     @can('manageMembers', $event)
                         <form method="POST" action="{{ route('events.members.store', $event) }}" class="mt-5 grid gap-3 sm:grid-cols-[1fr_170px_auto]">
                             @csrf
-                            <input name="email" type="email" required placeholder="fotografo@email.com" class="rounded-2xl border-slate-200 text-sm shadow-sm focus:border-slate-900 focus:ring-slate-900">
-                            <select name="role" class="rounded-2xl border-slate-200 text-sm shadow-sm focus:border-slate-900 focus:ring-slate-900">
+                            <input name="email" type="email" required placeholder="fotografo@email.com" class="rounded-2xl border-slate-200 text-sm shadow-xs focus:border-slate-900 focus:ring-slate-900">
+                            <select name="role" class="rounded-2xl border-slate-200 text-sm shadow-xs focus:border-slate-900 focus:ring-slate-900">
                                 <option value="photographer">Fotógrafo</option>
                                 <option value="assistant">Assistente</option>
                                 <option value="viewer">Visualizador</option>
@@ -133,7 +133,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold text-slate-500">Volume de fotos</p>
@@ -162,7 +162,7 @@
                 </div>
             </section>
 
-            <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <section class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <p class="text-sm font-semibold text-slate-500">Métricas do evento</p>
@@ -189,7 +189,7 @@
             </section>
 
             <section class="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <h2 class="text-lg font-semibold text-slate-950">Publicação</h2>
                     <p class="mt-2 text-sm text-slate-500">Controle quando o evento aparece para clientes e proteja o histórico de vendas.</p>
                     @can('update', $event)
@@ -226,7 +226,7 @@
                     @endcan
                 </div>
 
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <div class="flex items-center justify-between gap-4">
                         <h2 class="text-lg font-semibold text-slate-950">Pedidos recentes</h2>
                         <a href="{{ route('events.orders', $event) }}" class="text-sm font-semibold text-slate-700">Ver todos</a>

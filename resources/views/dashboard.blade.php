@@ -32,7 +32,7 @@
                 @endif
 
                 <div class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-                    <section class="overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm">
+                    <section class="overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-xs">
                         <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">Área do cliente</p>
                         <h2 class="mt-4 max-w-2xl text-4xl font-extrabold leading-tight">Encontre suas fotos usando uma selfie.</h2>
                         <p class="mt-4 max-w-xl text-slate-300">Acesse um evento publicado, envie sua selfie com consentimento e finalize a compra das fotos encontradas.</p>

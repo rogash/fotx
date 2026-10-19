@@ -44,7 +44,7 @@
                             <img src="{{ route('media.photos.watermarked', $event->cover_photo) }}" class="h-full w-full object-cover" alt="Capa do evento {{ $event->name }}">
                         @else
                             <div class="flex h-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
-                                <x-brand.logo variant="light" class="h-12 w-auto opacity-80" />
+                                <x-brand.logo variant="light" class="opacity-80" />
                             </div>
                         @endif
                     </div>

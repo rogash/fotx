@@ -15,17 +15,17 @@
     <div class="py-10">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <div class="grid gap-5 md:grid-cols-2">
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <p class="text-sm text-slate-500">Pedidos pagos</p>
                     <p class="mt-2 text-3xl font-semibold text-slate-950">{{ $paid_orders_count }}</p>
                 </div>
-                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200">
                     <p class="text-sm text-slate-500">Faturamento</p>
                     <p class="mt-2 text-3xl font-semibold text-slate-950">R$ {{ number_format((float) $event_revenue, 2, ',', '.') }}</p>
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+            <div class="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-slate-100">
                         <thead class="bg-slate-50">

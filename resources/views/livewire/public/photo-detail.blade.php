@@ -8,7 +8,7 @@
         </a>
 
         <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_360px] lg:gap-8">
-            <section class="overflow-hidden rounded-3xl bg-white p-2 shadow-sm ring-1 ring-slate-200/80">
+            <section class="overflow-hidden rounded-3xl bg-white p-2 shadow-xs ring-1 ring-slate-200/80">
                 <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
                     <img src="{{ route('media.photos.watermarked', $event_photo) }}" class="h-full w-full object-contain" alt="Foto do evento {{ $event->name }}">
                 </div>

@@ -37,7 +37,7 @@
         <textarea wire:model="description" rows="5" class="fotx-input mt-2 w-full"></textarea>
     </div>
     <label class="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-        <input type="checkbox" wire:model="public_gallery" class="mt-1 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600" />
+        <input type="checkbox" wire:model="public_gallery" class="mt-1 rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-600" />
         <span>
             <span class="block text-sm font-semibold text-slate-900">Galeria aberta</span>
             <span class="mt-1 block text-sm text-slate-500">Mostra todas as fotos do evento na página pública, além da busca. Bom para corridas e esportes; em casamentos e festas, prefira deixar só a busca.</span>
