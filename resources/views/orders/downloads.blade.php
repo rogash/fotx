@@ -7,7 +7,7 @@
 
         <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             @foreach ($order->items as $item)
-                <li class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
+                <li class="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80">
                     <div class="aspect-[4/3] bg-slate-100">
                         <img src="{{ route('media.photos.thumbnail', $item->event_photo) }}" loading="lazy" class="h-full w-full object-contain" alt="Foto comprada">
                     </div>

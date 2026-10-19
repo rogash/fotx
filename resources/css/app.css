@@ -1,6 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/forms";
+
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+
+@theme {
+    --font-sans: Figtree, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/*
+    Compatibilidade com o Preflight do Tailwind 3 (guia oficial de migração):
+    o v4 mudou a cor padrão de borda para currentColor e o cursor dos botões
+    para default.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: #e5e7eb; /* gray-200 do v3; o do v4 é oklch e difere levemente */
+    }
+
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    /* O v4 também zera o botão nativo do input de arquivo; o v3 mantinha o visual do navegador. */
+    ::file-selector-button {
+        padding: revert;
+        border: revert;
+        border-radius: revert;
+        background-color: revert;
+    }
+}
 
 @layer base {
     body {
@@ -22,19 +57,19 @@
     }
 
     .fotx-card {
-        @apply rounded-[1.75rem] bg-white/90 shadow-sm ring-1 ring-slate-200/70 backdrop-blur;
+        @apply rounded-[1.75rem] bg-white/90 shadow-xs ring-1 ring-slate-200/70 backdrop-blur-sm;
     }
 
     .fotx-card-soft {
-        @apply rounded-[1.75rem] bg-white/70 ring-1 ring-slate-200/70 backdrop-blur;
+        @apply rounded-[1.75rem] bg-white/70 ring-1 ring-slate-200/70 backdrop-blur-sm;
     }
 
     .fotx-button-primary {
-        @apply inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/10;
+        @apply inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-xs transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/10;
     }
 
     .fotx-button-secondary {
-        @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/75 px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950;
+        @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/75 px-5 py-3 text-sm font-semibold text-slate-700 shadow-xs transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950;
     }
 
     .fotx-chip {
@@ -42,6 +77,6 @@
     }
 
     .fotx-input {
-        @apply rounded-2xl border-slate-200 bg-white/85 shadow-sm transition focus:border-slate-950 focus:ring-slate-950;
+        @apply rounded-2xl border-slate-200 bg-white/85 shadow-xs transition focus:border-slate-950 focus:ring-slate-950;
     }
 }

@@ -15,7 +15,7 @@
     <body class="min-h-screen bg-[#f5f5f7] font-sans text-slate-900 antialiased">
         <div class="flex min-h-screen flex-col items-center px-4 py-10 sm:justify-center">
             <a href="https://fotx.com.br" class="inline-flex">
-                <x-brand.logo class="h-10 w-auto" />
+                <x-brand.logo />
             </a>
 
             <div class="fotx-card mt-8 w-full max-w-md p-6 sm:p-8">

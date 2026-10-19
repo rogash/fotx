@@ -7,7 +7,7 @@
                     role="tab"
                     aria-selected="{{ $search_mode === $mode ? 'true' : 'false' }}"
                     wire:click="set_search_mode('{{ $mode }}')"
-                    class="rounded-2xl px-4 py-3 text-sm font-semibold transition {{ $search_mode === $mode ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950' }}"
+                    class="rounded-2xl px-4 py-3 text-sm font-semibold transition {{ $search_mode === $mode ? 'bg-slate-950 text-white shadow-xs' : 'text-slate-600 hover:text-slate-950' }}"
                 >
                     {{ $label }}
                 </button>
@@ -33,7 +33,7 @@
                     @error('selfie') <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
 
                     <label class="mt-4 flex gap-3 text-sm text-slate-600">
-                        <input type="checkbox" wire:model="consent_accepted" class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600" />
+                        <input type="checkbox" wire:model="consent_accepted" class="mt-0.5 rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-600" />
                         <span>Autorizo o uso temporário da minha selfie para localizar fotos em que eu apareça neste evento.</span>
                     </label>
                     @error('consent_accepted') <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p> @enderror

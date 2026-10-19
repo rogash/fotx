@@ -1,10 +1,10 @@
 @props(['event', 'photo', 'inCart' => false, 'score' => null])
 
-<div wire:key="foto-{{ $photo->public_id }}" class="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 {{ $inCart ? 'ring-2 ring-emerald-500' : 'ring-slate-200/80' }}">
+<div wire:key="foto-{{ $photo->public_id }}" class="group overflow-hidden rounded-2xl bg-white shadow-xs ring-1 {{ $inCart ? 'ring-2 ring-emerald-500' : 'ring-slate-200/80' }}">
     <a href="{{ route('public.photos.show', [$event->slug, $photo]) }}" class="relative block aspect-[4/3] bg-slate-100">
         <img src="{{ route('media.photos.watermarked', $photo) }}" loading="lazy" class="h-full w-full object-contain" alt="Foto do evento {{ $event->name }}">
         @if ($score !== null)
-            <span class="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-emerald-700 shadow-sm">{{ number_format($score * 100, 0) }}% compatível</span>
+            <span class="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-emerald-700 shadow-xs">{{ number_format($score * 100, 0) }}% compatível</span>
         @endif
         @if ($photo->participant_code)
             <span class="absolute right-2 top-2 rounded-full bg-slate-950/70 px-2 py-0.5 text-xs font-semibold text-white">Nº {{ $photo->participant_code }}</span>

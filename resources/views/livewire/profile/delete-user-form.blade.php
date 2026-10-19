@@ -23,7 +23,7 @@ new class extends Component
     }
 }; ?>
 
-<section class="space-y-6">
+<section>
     <header>
         <h2 class="text-lg font-medium text-gray-900">
             {{ __('Delete Account') }}
@@ -35,6 +35,7 @@ new class extends Component
     </header>
 
     <x-danger-button
+        class="mt-6"
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
     >{{ __('Delete Account') }}</x-danger-button>

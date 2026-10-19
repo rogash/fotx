@@ -10,7 +10,7 @@
         <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <div class="space-y-4">
                 @forelse ($orders as $order)
-                    <a href="{{ route('orders.downloads', [$order, $order->download_token]) }}" class="block rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md">
+                    <a href="{{ route('orders.downloads', [$order, $order->download_token]) }}" class="block rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md">
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div>
                                 <p class="text-lg font-semibold text-slate-950">{{ $order->event->name }}</p>
@@ -23,7 +23,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="rounded-2xl bg-white p-8 text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">Você ainda não comprou fotos.</div>
+                    <div class="rounded-2xl bg-white p-8 text-sm text-slate-500 shadow-xs ring-1 ring-slate-200">Você ainda não comprou fotos.</div>
                 @endforelse
             </div>
 
