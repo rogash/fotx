@@ -14,7 +14,7 @@
     </head>
     <body class="min-h-screen bg-[#f5f5f7] font-sans text-slate-900 antialiased">
         <div class="flex min-h-screen flex-col items-center px-4 py-10 sm:justify-center">
-            <a href="https://fotx.com.br" class="inline-flex">
+            <a href="{{ $homeUrl ?? 'https://fotx.com.br' }}" class="inline-flex">
                 <x-brand.logo />
             </a>
 

@@ -7,6 +7,7 @@ use App\Models\EventPhoto;
 use App\Models\PhotoFace;
 use App\Services\FaceRecognition\FaceRecognitionManager;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -24,25 +25,64 @@ class FaceRecognitionService
     public function search_by_selfie(Event $event, string $selfie_path): array
     {
         $image_bytes = $this->prepare_image($this->disk()->get($selfie_path));
-        $matches = collect($this->face_recognition_manager->driver()->search_faces($event, $image_bytes));
+        $matches = $this->face_recognition_manager->driver()->search_faces($event, $image_bytes);
+
+        return collect($this->score_ready_photos([$event->id => $matches]))
+            ->map(fn (array $result): array => [
+                'event_photo_id' => $result['event_photo_id'],
+                'score' => $result['score'],
+            ])
+            ->all();
+    }
+
+    /**
+     * Compara a selfie com vários eventos de uma vez (busca na vitrine).
+     *
+     * @param  Collection<int, Event>  $events
+     * @return list<array{event_id: int, event_photo_id: int, score: float}>
+     */
+    public function search_by_selfie_in_events(Collection $events, string $selfie_path): array
+    {
+        if ($events->isEmpty()) {
+            return [];
+        }
+
+        $image_bytes = $this->prepare_image($this->disk()->get($selfie_path));
+
+        return $this->score_ready_photos(
+            $this->face_recognition_manager->driver()->search_faces_in_events($events, $image_bytes)
+        );
+    }
+
+    /**
+     * Converte os rostos encontrados em fotos prontas, com a melhor similaridade de cada foto.
+     *
+     * @param  array<int, list<array{provider_face_id: string, similarity: float}>>  $matches_by_event
+     * @return list<array{event_id: int, event_photo_id: int, score: float}>
+     */
+    private function score_ready_photos(array $matches_by_event): array
+    {
+        $matches = collect($matches_by_event)->flatten(1);
 
         if ($matches->isEmpty()) {
             return [];
         }
 
         $photo_ids_by_face = PhotoFace::query()
-            ->where('event_id', $event->id)
-            ->whereIn('provider_face_id', $matches->pluck('provider_face_id'))
+            ->whereIn('event_id', array_keys($matches_by_event))
+            ->whereIn('provider_face_id', $matches->pluck('provider_face_id')->unique())
             ->pluck('event_photo_id', 'provider_face_id');
 
-        $ready_photo_ids = $event->ready_photos()
-            ->whereIn('event_photos.id', $photo_ids_by_face->unique()->values())
-            ->pluck('event_photos.id');
+        $event_ids_by_ready_photo = EventPhoto::query()
+            ->whereIn('id', $photo_ids_by_face->unique()->values())
+            ->where('status', 'ready')
+            ->pluck('event_id', 'id');
 
         return $matches
-            ->filter(fn (array $match): bool => $ready_photo_ids->contains($photo_ids_by_face->get($match['provider_face_id'])))
+            ->filter(fn (array $match): bool => $event_ids_by_ready_photo->has($photo_ids_by_face->get($match['provider_face_id'])))
             ->groupBy(fn (array $match): int => $photo_ids_by_face->get($match['provider_face_id']))
-            ->map(fn ($photo_matches, int $event_photo_id): array => [
+            ->map(fn (Collection $photo_matches, int $event_photo_id): array => [
+                'event_id' => (int) $event_ids_by_ready_photo->get($event_photo_id),
                 'event_photo_id' => $event_photo_id,
                 'score' => round((float) $photo_matches->max('similarity'), 4),
             ])

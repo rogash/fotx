@@ -9,7 +9,9 @@ use App\Http\Controllers\Public\MediaController;
 use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\PaymentController;
 use App\Http\Controllers\Public\TrackingController;
+use App\Livewire\Public\CatalogSelfieSearch;
 use App\Livewire\Public\Checkout;
+use App\Livewire\Public\EventCatalog;
 use App\Livewire\Public\EventPage;
 use App\Livewire\Public\PhotoDetail;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +50,8 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+Route::get('/eventos', EventCatalog::class)->name('public.events.index');
+Route::get('/encontrar-fotos', CatalogSelfieSearch::class)->name('public.catalog.search');
 Route::get('/e/{slug}', EventPage::class)->name('public.events.show');
 Route::get('/e/{slug}/search', EventPage::class)->name('public.events.search');
 Route::get('/e/{slug}/photos/{event_photo}', PhotoDetail::class)->name('public.photos.show');

@@ -58,6 +58,8 @@
                 @if (session('status'))
                     <p class="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</p>
                 @endif
+
+                <x-public.cart-error />
             </aside>
         </div>
     </main>

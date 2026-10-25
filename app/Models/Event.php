@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status', 'public_gallery', 'cover_photo_id'])]
+#[Fillable(['user_id', 'name', 'slug', 'event_date', 'location', 'description', 'price_per_photo', 'status', 'public_gallery', 'show_in_catalog', 'cover_photo_id'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -31,6 +31,7 @@ class Event extends Model
         return [
             'event_date' => 'date',
             'public_gallery' => 'boolean',
+            'show_in_catalog' => 'boolean',
             'price_per_photo' => 'decimal:2',
         ];
     }
@@ -86,6 +87,17 @@ class Event extends Model
                 ->where('user_id', $user->id)
                 ->orWhereHas('members', fn (Builder $member_query) => $member_query->where('user_id', $user->id));
         });
+    }
+
+    /**
+     * Eventos que o fotógrafo autorizou aparecer na vitrine pública. Sem o opt-in,
+     * o evento só é acessado por quem tem o link.
+     */
+    public function scopeInCatalog(Builder $query): Builder
+    {
+        return $query
+            ->where('status', 'published')
+            ->where('show_in_catalog', true);
     }
 
     public function member_for(User $user): ?EventMember

@@ -26,7 +26,7 @@
 
             <div class="mt-8 flex flex-wrap justify-center gap-3">
                 <a href="{{ route('dashboard') }}" class="fotx-button-primary">Ir para o painel</a>
-                <a href="https://fotx.com.br/para-voce.html" class="fotx-button-secondary">Procurar minhas fotos</a>
+                <a href="https://fotx.com.br/" class="fotx-button-secondary">Procurar minhas fotos</a>
             </div>
         </main>
     </body>

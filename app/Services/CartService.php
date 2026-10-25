@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Event;
 use App\Models\EventPhoto;
 use Illuminate\Support\Collection;
 
@@ -9,9 +10,19 @@ class CartService
 {
     private const SESSION_KEY = 'fotx_cart';
 
-    public function add_photo(EventPhoto $event_photo): void
+    /**
+     * O checkout gera um pedido por evento, então o carrinho não mistura eventos.
+     * Retorna false quando a foto é de outro evento que não o do carrinho.
+     */
+    public function add_photo(EventPhoto $event_photo): bool
     {
         $cart = session(self::SESSION_KEY, []);
+        $cart_event_id = collect($cart)->value('event_id');
+
+        if ($cart_event_id !== null && (int) $cart_event_id !== (int) $event_photo->event_id) {
+            return false;
+        }
+
         $cart[$event_photo->id] = [
             'event_photo_id' => $event_photo->id,
             'event_id' => $event_photo->event_id,
@@ -19,6 +30,15 @@ class CartService
         ];
 
         session([self::SESSION_KEY => $cart]);
+
+        return true;
+    }
+
+    public function other_event_message(): string
+    {
+        $event_name = Event::query()->whereKey(collect(session(self::SESSION_KEY, []))->value('event_id'))->value('name');
+
+        return "Seu carrinho já tem fotos de {$event_name}. Finalize essa compra ou remova as fotos do carrinho para escolher fotos de outro evento.";
     }
 
     public function remove_photo(int $event_photo_id): void

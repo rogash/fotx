@@ -171,7 +171,13 @@ class SelfieSearch extends Component
             ->where('event_id', $this->event->id)
             ->where('public_id', $event_photo_public_id)
             ->firstOrFail();
-        $cart_service->add_photo($event_photo);
+        if (! $cart_service->add_photo($event_photo)) {
+            $this->addError('cart', $cart_service->other_event_message());
+
+            return;
+        }
+
+        $this->resetErrorBag('cart');
         $this->dispatch('cart-updated');
     }
 

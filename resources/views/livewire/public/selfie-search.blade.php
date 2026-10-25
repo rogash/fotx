@@ -16,16 +16,7 @@
 
         @if ($search_mode === 'selfie')
             <form wire:submit="search" class="grid gap-6 p-5 sm:p-6 md:grid-cols-[auto_1fr] md:items-center">
-                <label class="relative mx-auto flex h-40 w-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-emerald-500 hover:bg-emerald-50/50">
-                    @if ($selfie)
-                        <img src="{{ $selfie->temporaryUrl() }}" class="absolute inset-0 h-full w-full object-cover" alt="Sua selfie">
-                    @else
-                        <svg class="h-9 w-9 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l1.1-1.6A1 1 0 0 1 9.6 4h4.8a1 1 0 0 1 .8.4L16.3 6h1.2A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
-                        <span class="mt-2 px-4 text-sm font-semibold text-slate-700">Tirar ou escolher selfie</span>
-                    @endif
-                    <input type="file" wire:model="selfie" accept="image/jpeg,image/png,image/webp" capture="user" class="sr-only" />
-                    <span wire:loading wire:target="selfie" class="absolute inset-0 flex items-center justify-center bg-white/80 text-sm font-semibold text-slate-600">Carregando...</span>
-                </label>
+                <x-public.selfie-picker :selfie="$selfie" />
 
                 <div>
                     <h2 class="text-xl font-bold text-slate-950">Encontre suas fotos pelo rosto</h2>
@@ -63,6 +54,8 @@
     @if (session('status'))
         <p class="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-100">{{ session('status') }}</p>
     @endif
+
+    <x-public.cart-error class="sticky top-20 z-20" />
 
     @if ($results)
         <section x-data x-init="$el.scrollIntoView({ behavior: 'smooth', block: 'start' })" class="mt-10 scroll-mt-20">
@@ -109,23 +102,5 @@
         </section>
     @endif
 
-    @if ($cart_count > 0)
-        <div class="fixed inset-x-0 bottom-0 z-40 p-3 sm:p-4" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
-            <div class="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl shadow-slate-950/30 sm:px-5">
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold">
-                        {{ $cart_count }} {{ $cart_count === 1 ? 'foto' : 'fotos' }} · R$ {{ number_format($cart_total, 2, ',', '.') }}
-                    </p>
-                    <p class="truncate text-xs text-emerald-300">
-                        @if ($next_discount)
-                            Mais {{ $next_discount['missing_photos'] }} {{ $next_discount['missing_photos'] === 1 ? 'foto' : 'fotos' }} e você ganha {{ number_format($next_discount['percent'] * 100, 0) }}% de desconto
-                        @elseif ($discount_percent > 0)
-                            Desconto de {{ number_format($discount_percent * 100, 0) }}% aplicado
-                        @endif
-                    </p>
-                </div>
-                <a href="{{ route('checkout.show') }}" class="shrink-0 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-emerald-300">Finalizar compra</a>
-            </div>
-        </div>
-    @endif
+    <x-public.cart-bar :count="$cart_count" :total="$cart_total" :discount-percent="$discount_percent" :next-discount="$next_discount" />
 </div>
