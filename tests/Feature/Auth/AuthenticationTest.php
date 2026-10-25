@@ -17,7 +17,9 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.login')
+            ->assertSee('href="https://fotx.com.br"', false)
+            ->assertDontSee('vender-fotos.html', false);
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

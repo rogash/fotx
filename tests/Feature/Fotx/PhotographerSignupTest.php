@@ -17,7 +17,8 @@ class PhotographerSignupTest extends TestCase
     {
         $this->get(route('register.photographer'))
             ->assertOk()
-            ->assertSeeVolt('pages.auth.register-photographer');
+            ->assertSeeVolt('pages.auth.register-photographer')
+            ->assertSee('href="https://fotx.com.br/vender-fotos.html"', false);
     }
 
     public function test_photographer_signup_creates_pending_customer_without_photographer_access(): void
