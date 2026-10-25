@@ -43,6 +43,13 @@
             <span class="mt-1 block text-sm text-slate-500">Mostra todas as fotos do evento na página pública, além da busca. Bom para corridas e esportes; em casamentos e festas, prefira deixar só a busca.</span>
         </span>
     </label>
+    <label class="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+        <input type="checkbox" wire:model="show_in_catalog" class="mt-1 rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-600" />
+        <span>
+            <span class="block text-sm font-semibold text-slate-900">Listar na vitrine do Fotx</span>
+            <span class="mt-1 block text-sm text-slate-500">Quando o evento estiver publicado, ele aparece na lista e na busca de eventos do Fotx. Desmarcado, só quem tem o link ou o QR Code encontra a galeria.</span>
+        </span>
+    </label>
     <div class="flex justify-end gap-3">
         <a href="{{ route('events.index') }}" class="fotx-button-secondary">Cancelar</a>
         <button class="fotx-button-primary">Salvar evento</button>

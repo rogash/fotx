@@ -7,6 +7,10 @@ return [
     'face_recognition_driver' => env('FACE_RECOGNITION_DRIVER', 'mock'),
     'face_match_threshold' => (float) env('FACE_MATCH_THRESHOLD', 90),
     'face_search_max_results' => (int) env('FACE_SEARCH_MAX_RESULTS', 50),
+    // Busca por selfie na vitrine: cada evento consultado é uma chamada paga ao provedor.
+    'catalog_face_search_max_events' => (int) env('CATALOG_FACE_SEARCH_MAX_EVENTS', 30),
+    'catalog_face_search_max_attempts' => (int) env('CATALOG_FACE_SEARCH_MAX_ATTEMPTS', 3),
+    'catalog_face_search_max_results' => (int) env('CATALOG_FACE_SEARCH_MAX_RESULTS', 100),
     'rekognition_region' => env('REKOGNITION_REGION', 'sa-east-1'),
     'rekognition_access_key_id' => env('REKOGNITION_ACCESS_KEY_ID'),
     'rekognition_secret_access_key' => env('REKOGNITION_SECRET_ACCESS_KEY'),

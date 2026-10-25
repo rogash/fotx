@@ -27,7 +27,12 @@ class PhotoDetail extends Component
 
     public function add_to_cart(CartService $cart_service): void
     {
-        $cart_service->add_photo($this->event_photo->load('event'));
+        if (! $cart_service->add_photo($this->event_photo->load('event'))) {
+            $this->addError('cart', $cart_service->other_event_message());
+
+            return;
+        }
+
         $this->dispatch('cart-updated');
         session()->flash('status', 'Foto adicionada ao carrinho.');
     }

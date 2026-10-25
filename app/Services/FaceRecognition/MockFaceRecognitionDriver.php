@@ -4,6 +4,7 @@ namespace App\Services\FaceRecognition;
 
 use App\Models\Event;
 use App\Models\PhotoFace;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -33,6 +34,13 @@ class MockFaceRecognitionDriver implements FaceRecognitionDriver
                 'provider_face_id' => $provider_face_id,
                 'similarity' => random_int(55, 98) / 100,
             ])
+            ->all();
+    }
+
+    public function search_faces_in_events(Collection $events, string $image_bytes): array
+    {
+        return $events
+            ->mapWithKeys(fn (Event $event): array => [$event->id => $this->search_faces($event, $image_bytes)])
             ->all();
     }
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['event_id', 'selfie_path', 'status', 'results', 'consent_accepted', 'ip_address', 'user_agent', 'expires_at'])]
+#[Fillable(['scope', 'event_id', 'selfie_path', 'status', 'results', 'consent_accepted', 'ip_address', 'user_agent', 'expires_at'])]
 class FaceSearch extends Model
 {
     protected function casts(): array
