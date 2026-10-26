@@ -39,7 +39,8 @@ class CatalogSelfieSearchTest extends TestCase
         $this->get(route('public.catalog.search'))
             ->assertOk()
             ->assertSeeLivewire(CatalogSelfieSearch::class)
-            ->assertSee('todos os eventos da vitrine do Fotx');
+            ->assertSee('todos os eventos da vitrine do Fotx')
+            ->assertSee('apagada automaticamente em até '.config('fotx.face_selfie_ttl_hours').' horas');
     }
 
     public function test_selfie_is_searched_only_in_catalog_events_and_grouped_by_event(): void

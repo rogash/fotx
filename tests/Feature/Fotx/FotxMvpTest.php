@@ -213,6 +213,43 @@ class FotxMvpTest extends TestCase
         $this->assertDatabaseMissing('face_searches', ['id' => $face_search->id]);
     }
 
+    public function test_selfie_purge_runs_hourly_and_removes_what_expires_before_next_run(): void
+    {
+        Storage::fake('local');
+
+        $event = Event::factory()->create();
+        $expires_before_next_run = FaceSearch::query()->create([
+            'event_id' => $event->id,
+            'selfie_path' => 'events/1/selfies/vence-em-breve.jpg',
+            'status' => 'done',
+            'consent_accepted' => true,
+            'expires_at' => now()->addMinutes(30),
+        ]);
+        $expires_later = FaceSearch::query()->create([
+            'event_id' => $event->id,
+            'selfie_path' => 'events/1/selfies/vence-depois.jpg',
+            'status' => 'done',
+            'consent_accepted' => true,
+            'expires_at' => now()->addHours(2),
+        ]);
+
+        Artisan::call('fotx:purge-expired-selfies');
+
+        $this->assertDatabaseMissing('face_searches', ['id' => $expires_before_next_run->id]);
+        $this->assertDatabaseHas('face_searches', ['id' => $expires_later->id]);
+
+        Artisan::call('schedule:list');
+        $this->assertMatchesRegularExpression('/0 \* \* \* \*\s+php artisan fotx:purge-expired-selfies/', Artisan::output());
+    }
+
+    public function test_selfie_search_promises_the_configured_retention(): void
+    {
+        config(['fotx.face_selfie_ttl_hours' => 24]);
+        $event = Event::factory()->create(['status' => 'published']);
+
+        Livewire::test(SelfieSearch::class, ['event' => $event])->assertSee('apagada em até 24 horas');
+    }
+
     public function test_checkout_creates_pending_order(): void
     {
         $event = Event::factory()->create(['price_per_photo' => 25.00]);

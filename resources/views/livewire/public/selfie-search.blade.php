@@ -20,7 +20,7 @@
 
                 <div>
                     <h2 class="text-xl font-bold text-slate-950">Encontre suas fotos pelo rosto</h2>
-                    <p class="mt-1 text-sm leading-6 text-slate-500">Use uma selfie de frente, com boa luz e sem óculos escuros. Ela é usada só para esta busca e apagada em até 24 horas.</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-500">Use uma selfie de frente, com boa luz e sem óculos escuros. Ela é usada só para esta busca e apagada em até {{ config('fotx.face_selfie_ttl_hours') }} horas.</p>
                     @error('selfie') <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
 
                     <label class="mt-4 flex gap-3 text-sm text-slate-600">

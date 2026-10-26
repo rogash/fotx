@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('fotx:purge-expired-selfies')->dailyAt('03:15');
+Schedule::command('fotx:purge-expired-selfies')->hourly();
