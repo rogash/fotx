@@ -16,12 +16,12 @@
 
                 <div>
                     <h2 class="text-xl font-bold text-slate-950">Envie uma selfie</h2>
-                    <p class="mt-1 text-sm leading-6 text-slate-500">Use uma foto de frente, com boa luz e sem óculos escuros. Ela é apagada automaticamente em até 48 horas.</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-500">Use uma foto de frente, com boa luz e sem óculos escuros. Ela é apagada automaticamente em até {{ config('fotx.face_selfie_ttl_hours') }} horas.</p>
                     @error('selfie') <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
 
                     <label class="mt-4 flex gap-3 text-sm text-slate-600">
                         <input type="checkbox" wire:model="consent_accepted" class="mt-0.5 rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-600" />
-                        <span>Autorizo o uso temporário da minha selfie para comparar meu rosto com as fotos de todos os eventos da vitrine do Fotx e localizar fotos em que eu apareça. A selfie é apagada automaticamente em até 48 horas.</span>
+                        <span>Autorizo o uso temporário da minha selfie para comparar meu rosto com as fotos de todos os eventos da vitrine do Fotx e localizar fotos em que eu apareça. A selfie é apagada automaticamente em até {{ config('fotx.face_selfie_ttl_hours') }} horas.</span>
                     </label>
                     @error('consent_accepted') <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
 

@@ -8,13 +8,22 @@ use Illuminate\Support\Facades\Storage;
 
 class PurgeExpiredSelfiesCommand extends Command
 {
+    /**
+     * Intervalo do agendamento (routes/console.php). A limpeza já remove o que
+     * venceria antes da próxima execução, para nenhuma selfie passar do prazo
+     * prometido ao comprador (fotx.face_selfie_ttl_hours).
+     */
+    private const SCHEDULE_INTERVAL_MINUTES = 60;
+
     protected $signature = 'fotx:purge-expired-selfies {--dry-run : Apenas mostra quantas buscas expiradas seriam removidas}';
 
     protected $description = 'Remove selfies temporarias e buscas faciais expiradas.';
 
     public function handle(): int
     {
-        $query = FaceSearch::query()->whereNotNull('expires_at')->where('expires_at', '<=', now());
+        $query = FaceSearch::query()
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now()->addMinutes(self::SCHEDULE_INTERVAL_MINUTES));
         $total = (clone $query)->count();
 
         if ($this->option('dry-run')) {
